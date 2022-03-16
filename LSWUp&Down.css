@@ -1,0 +1,92 @@
+::-webkit-scrollbar{
+  width: 6px;
+  margin: 0px;
+  padding: 0px;
+}
+
+::-webkit-scrollbar-thumb{
+  height: 17%;
+  background-color: rgba(49,100,140,1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-track{
+  background-color: rgba(49,100,140,0.33);
+}
+
+.nameLabel{
+  width: 100%-5px;
+  height: 25px;
+  background-color: rgba(49,100,140,1);
+  color: white;
+  font-family: '맑은 고딕';
+  padding-left: 5px;
+  position: sticky;
+  top:0px;
+  user-select:none
+}
+
+.createLabel{
+  float: right;
+  padding-right : 5px;
+}
+
+.fileList{
+  width: 100%-5px;
+  height: 100%;
+  font-family: '맑은 고딕';
+  padding-left: 1px;
+  padding-right: 1px;
+  font-size: 14px;
+}
+
+.filelistselect{
+  margin-top: 1px;
+  border-top: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+}
+
+.inputdiv {
+  display:inline-block;
+  margin-right: 10px;
+}
+
+.inputdiv label {
+  display: flex;
+  padding: 2px 4px;
+  color: #FFF;
+  font-size: 13px;
+  font-family: '맑은 고딕';
+  line-height: normal;
+  vertical-align: middle;
+  background-color: #337ab7;
+  cursor: pointer;
+  border: 1px solid lightblue;
+  border-radius: .25em;
+}
+
+.inputdiv input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip:rect(0,0,0,0);
+  border: 0;
+}
+
+.inputdiv input[type="button"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip:rect(0,0,0,0);
+  border: 0;
+}
+
+.inputdiv label:active {
+  background-color: rgb(132, 167, 213);
+}
