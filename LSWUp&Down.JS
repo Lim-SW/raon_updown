@@ -1,25 +1,28 @@
 function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
-    LSW = [];
+    LSWUpDownFileWaitList.prototype.wl = []; // 프로토타입으로 파일 오브젝트 보관
+    var WaitList = new LSWUpDownFileWaitList();
 
     var upBP = LoadUI('Upload');
     var dnBP = LoadUI('Download');
 
     var fileInput = AddB(upBP,'file','fileInput','파일추가');
-    fileInput.onchange = function(e){Addfile(this);}
-    var fileInput = AddB(upBP,'button','exceptFile','파일제외');
-    fileInput.onchange = function(e){/*함수 추가해야함*/}
-    var fileInput = AddB(upBP,'button','startUpload','업로드시작');
-    fileInput.onchange = function(e){/*함수 추가해야함*/}
+    fileInput.onchange = function(){Addfile(this);}
+    var exceptFile = AddB(upBP,'button','exceptFile','파일제외');
+    exceptFile.onclick = function(){ExceptFile();}
+    var startUpload = AddB(upBP,'button','startUpload','업로드시작');
+    startUpload.onclick = function(){/*함수 추가해야함*/}
 
-    
-    var fileInput = AddB(dnBP,'button','refresh','불러오기');
-    fileInput.onchange = function(e){/*함수 추가해야함*/}
-    var fileInput = AddB(dnBP,'button','deleteFile','파일삭제');
-    fileInput.onchange = function(e){/*함수 추가해야함*/}
-    var fileInput = AddB(dnBP,'button','startDownload','다운로드시작');
-    fileInput.onchange = function(e){/*함수 추가해야함*/}
+    var refresh = AddB(dnBP,'button','refresh','불러오기');
+    refresh.onclick = function(){/*함수 추가해야함*/}
+    var deleteFile = AddB(dnBP,'button','deleteFile','파일삭제');
+    deleteFile.onclick = function(){/*함수 추가해야함*/}
+    var startDownload = AddB(dnBP,'button','startDownload','다운로드시작');
+    startDownload.onclick = function(){/*함수 추가해야함*/}
 
     //var formData = new FormData();
+
+    function LSWUpDownFileWaitList() {// 파일 오브젝트 프로토타입용 함수
+    }
 
     function LoadUI(key){ // UI 불러오기
         // div
@@ -107,6 +110,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     function LoadFile(where, fn, fs){ // 파일 리스트에 올리기
         var tempFileDiv = document.createElement('div');
         tempFileDiv.className = 'filelistselect';
+        tempFileDiv.id = fn+' '+fs;
         var checkBox = document.createElement('input');
         checkBox.type = 'checkbox';
         checkBox.style.float = 'left';
@@ -150,7 +154,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
     }
 
-    function Addfile(th){
+    function Addfile(th){ // 파일추가 기능
         var place = document.getElementById('UploadPlace_'+id);
         var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
         var same = '개 제외하였습니다.\n';
@@ -172,7 +176,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
                 add+=('>>> '+tempF.name+'\n');
                 LoadFile(upFL, tempF.name, calSize);
                 // 여기서 파일객체를 어디다 매달아야되는데 음.... 그걸 FormData 형식으로 해서 전송하면 되나?
-                LSW.push({'name':tempF.name, 'size':calSize, 'file':tempF}); // 이렇게?
+                WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF}); // 이렇게? 근데 이러면 전역변수로 보이는데 흠..
             }
         }
         same = '중복된 파일을 '+sameCount+same;
@@ -181,5 +185,39 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         }
         if(sameCount>0){alert(same);}
         th.value = '';
+    }
+
+    function ExceptFile(){ // 파일제외 기능
+        var place = document.getElementById('UploadPlace_'+id);
+        var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
+        var flag = 0;
+        var exceptList = [];
+        for(var u=0;u<upFL.childNodes.length;u++){
+            if(upFL.childNodes[u].childNodes[0].checked){
+                exceptList.push(upFL.childNodes[u].childNodes[1].innerText);
+                flag = 1;
+            }
+        }
+        
+        if(flag==1){
+            var yesorno = confirm('체크된 항목을 제외하시겠습니까?\n>>> '+String(exceptList).replaceAll(',','\n>>> '));
+            if(yesorno){
+                for(var l=0;l<WaitList.wl.length;l++){
+                    for(var e=0;e<exceptList.length;e++){
+                        if(WaitList.wl[l].name == exceptList[e]){
+                            var ed = place.contentDocument.getElementById(WaitList.wl[l].name+' '+WaitList.wl[l].size);
+                            upFL.removeChild(ed);
+                            WaitList.wl.splice(l,1);
+                            e--;l--;break;
+                        }
+                    }
+                }
+                alert('체크된 항목을 제외하였습니다.\n>>> '+String(exceptList).replaceAll(',','\n>>> '));
+            }
+        }
+        else{
+            alert('체크된 항목이 없습니다.');
+            console.log(WaitList.wl);
+        }
     }
 }
