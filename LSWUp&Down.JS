@@ -1,8 +1,23 @@
 function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
+    LSW = [];
+
     var upBP = LoadUI('Upload');
     var dnBP = LoadUI('Download');
+
+    var fileInput = AddB(upBP,'file','fileInput','파일추가');
+    fileInput.onchange = function(e){Addfile(this);}
+    var fileInput = AddB(upBP,'button','exceptFile','파일제외');
+    fileInput.onchange = function(e){/*함수 추가해야함*/}
+    var fileInput = AddB(upBP,'button','startUpload','업로드시작');
+    fileInput.onchange = function(e){/*함수 추가해야함*/}
+
     
-    AddFileB();
+    var fileInput = AddB(dnBP,'button','refresh','불러오기');
+    fileInput.onchange = function(e){/*함수 추가해야함*/}
+    var fileInput = AddB(dnBP,'button','deleteFile','파일삭제');
+    fileInput.onchange = function(e){/*함수 추가해야함*/}
+    var fileInput = AddB(dnBP,'button','startDownload','다운로드시작');
+    fileInput.onchange = function(e){/*함수 추가해야함*/}
 
     //var formData = new FormData();
 
@@ -90,7 +105,6 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     }
     
     function LoadFile(where, fn, fs){ // 파일 리스트에 올리기
-        // 패러미터는.... 놓을곳이랑 파일이름이랑 파일사이즈
         var tempFileDiv = document.createElement('div');
         tempFileDiv.className = 'filelistselect';
         var checkBox = document.createElement('input');
@@ -108,54 +122,25 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         fileSize.style.float = 'right';
         tempFileDiv.appendChild(fileSize);
 
-        where.appendChild(tempFileDiv); // 여기에 놓을곳 지정해야함
+        where.appendChild(tempFileDiv);
     }
 
-    function AddFileB(){ // 버튼추가 (파일추가)
+    function AddB(where, buttonType, buttonId, buttonText){ // 버튼추가
         var inputDiv = document.createElement('div');
         inputDiv.className = 'inputdiv';
         var fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.id = 'fileInput';
-        fileInput.multiple = 'true';
+        fileInput.type = buttonType;
+        fileInput.id = buttonId;
+        if(buttonType=='file'){fileInput.multiple = 'true';}
         var inputLabel = document.createElement('label');
-        inputLabel.innerText = '파일추가';
-        inputLabel.htmlFor = 'fileInput';
+        inputLabel.innerText = buttonText;
+        inputLabel.htmlFor = buttonId;
         
-        upBP.appendChild(inputDiv);
+        where.appendChild(inputDiv);
         inputDiv.appendChild(inputLabel);
         inputDiv.appendChild(fileInput);
 
-        fileInput.onchange = function(e){
-            var place = document.getElementById('UploadPlace_'+id);
-            var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
-            var same = '개 제외하였습니다.\n';
-            var add = '개의 파일을 추가하였습니다.\n';
-            var sameCount = 0;
-            for(var f=0;f<this.files.length;f++){
-                var tempF = this.files[f];
-                var calSize = bytesToSize(tempF.size);
-                var flag = 0;
-                for(var u=0;u<upFL.childNodes.length;u++){
-                    if(upFL.childNodes[u].childNodes[1].innerText == tempF.name && upFL.childNodes[u].childNodes[2].innerText == calSize){
-                        same += ('>>> '+tempF.name+'\n');
-                        sameCount += 1;
-                        flag = 1;
-                        break;
-                    }
-                }
-                if(flag == 0){
-                    add+=('>>> '+tempF.name+'\n');
-                    LoadFile(upFL, tempF.name, calSize);
-                }
-            }
-            same = '중복된 파일을 '+sameCount+same;
-            if(this.files.length-sameCount != 0){
-                same += ('\n중복되지 않은 '+(this.files.length-sameCount)+add);
-            }
-            if(sameCount>0){alert(same);}
-            this.value = '';
-        }
+        return fileInput;
     }
 
     function bytesToSize(bytes) { // 파일크기 단위 변경
@@ -163,5 +148,38 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         if (bytes == 0) return '0 Byte';
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+    }
+
+    function Addfile(th){
+        var place = document.getElementById('UploadPlace_'+id);
+        var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
+        var same = '개 제외하였습니다.\n';
+        var add = '개의 파일을 추가하였습니다.\n';
+        var sameCount = 0;
+        for(var f=0;f<th.files.length;f++){
+            var tempF = th.files[f];
+            var calSize = bytesToSize(tempF.size);
+            var flag = 0;
+            for(var u=0;u<upFL.childNodes.length;u++){
+                if(upFL.childNodes[u].childNodes[1].innerText == tempF.name && upFL.childNodes[u].childNodes[2].innerText == calSize){
+                    same += ('>>> '+tempF.name+'\n');
+                    sameCount += 1;
+                    flag = 1;
+                    break;
+                }
+            }
+            if(flag == 0){
+                add+=('>>> '+tempF.name+'\n');
+                LoadFile(upFL, tempF.name, calSize);
+                // 여기서 파일객체를 어디다 매달아야되는데 음.... 그걸 FormData 형식으로 해서 전송하면 되나?
+                LSW.push({'name':tempF.name, 'size':calSize, 'file':tempF}); // 이렇게?
+            }
+        }
+        same = '중복된 파일을 '+sameCount+same;
+        if(th.files.length-sameCount != 0){
+            same += ('\n중복되지 않은 '+(th.files.length-sameCount)+add);
+        }
+        if(sameCount>0){alert(same);}
+        th.value = '';
     }
 }
