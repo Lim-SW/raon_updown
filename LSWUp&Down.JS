@@ -58,6 +58,11 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         var fileListDiv = document.createElement('div');
         fileListDiv.className = 'fileList';
         fileListDiv.id = key+'fileListDiv_'+id;
+        fileListDiv.draggable = 'true';
+        
+        fileListDiv.ondrop = function(e){DragDrop(e);}
+        fileListDiv.ondragover = function(e){e.stopPropagation();e.preventDefault();}
+        fileListDiv.ondragleave = function(e){e.stopPropagation();e.preventDefault();}
 
         Place.addEventListener('load',function(){
             Place.contentDocument.body.appendChild(nameDiv);
@@ -231,9 +236,8 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         var formData = new FormData();
 
         for(var w=0;w<WaitList.wl.length;w++){
-            formData.append('name',WaitList.wl[w].name);
-            formData.append('size',WaitList.wl[w].size);
-            formData.append(WaitList.wl[w].name, WaitList.wl[w].file);
+            formData.append('name'+w,WaitList.wl[w].name);
+            formData.append('size'+w,WaitList.wl[w].size);
         }
 
         if(w!=0){
@@ -241,5 +245,12 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
             req.send(formData);
         }
 
+        //req.onreadystatechange = callbackFunction; 응답수행
+
+    }
+
+    function DragDrop(e){
+        e.preventDefault();
+        Addfile(e.dataTransfer);
     }
 }
