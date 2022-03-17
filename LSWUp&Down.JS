@@ -1,5 +1,6 @@
 function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     LSWUpDownFileWaitList.prototype.wl = []; // 프로토타입으로 파일 오브젝트 보관
+    LSWUpDownFileWaitList.prototype.IsIE = IsIE();
     var WaitList = new LSWUpDownFileWaitList();
 
     var upBP = LoadUI('Upload');
@@ -10,7 +11,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     var exceptFile = AddB(upBP,'button','exceptFile','파일제외');
     exceptFile.onclick = function(){ExceptFile();}
     var startUpload = AddB(upBP,'button','startUpload','업로드시작');
-    startUpload.onclick = function(){/*함수 추가해야함*/}
+    startUpload.onclick = function(){SendWaitList();}
 
     var refresh = AddB(dnBP,'button','refresh','불러오기');
     refresh.onclick = function(){/*함수 추가해야함*/}
@@ -61,7 +62,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         Place.addEventListener('load',function(){
             Place.contentDocument.body.appendChild(nameDiv);
             Place.contentDocument.body.appendChild(fileListDiv);
-            if(IsIE()){// IE용 사이즈 조절
+            if(WaitList.IsIE){// IE용 사이즈 조절
             Place.contentDocument.body.style.marginRight = '0px';
             }
             Place.contentDocument.body.style.margin = '0';
@@ -96,7 +97,8 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     }
 
     function IsIE() { // 브라우저 IE 체크 함수
-        return document.all || (!!window.MSInputMethodContext && !!document.documentMode);
+        var agent = navigator.userAgent.toLowerCase();
+        return (navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1);
     }
 
     function LoadCSS(where){ // 해당영역의 iframe에 CSS 로드함수
@@ -112,16 +114,19 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         tempFileDiv.className = 'filelistselect';
         tempFileDiv.id = fn+' '+fs;
         var checkBox = document.createElement('input');
+        checkBox.className = 'checkboxblock';
         checkBox.type = 'checkbox';
         checkBox.style.float = 'left';
         checkBox.style.overflow = 'auto';
-        if(IsIE()){checkBox.style.width = '17px';}
+        if(WaitList.IsIE){checkBox.style.width = '17px';}
         checkBox.style.marginTop = '2px';
         tempFileDiv.appendChild(checkBox);
         var span = document.createElement('span');
+        span.className = 'nameblock';
         span.innerText = fn;
         tempFileDiv.appendChild(span);
         var fileSize = document.createElement('span');
+        fileSize.className = 'sizeblock';
         fileSize.innerText = fs;
         fileSize.style.float = 'right';
         tempFileDiv.appendChild(fileSize);
@@ -175,8 +180,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
             if(flag == 0){
                 add+=('>>> '+tempF.name+'\n');
                 LoadFile(upFL, tempF.name, calSize);
-                // 여기서 파일객체를 어디다 매달아야되는데 음.... 그걸 FormData 형식으로 해서 전송하면 되나?
-                WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF}); // 이렇게? 근데 이러면 전역변수로 보이는데 흠..
+                WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF});
             }
         }
         same = '중복된 파일을 '+sameCount+same;
@@ -192,15 +196,17 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
         var flag = 0;
         var exceptList = [];
+        var message = '';
         for(var u=0;u<upFL.childNodes.length;u++){
             if(upFL.childNodes[u].childNodes[0].checked){
                 exceptList.push(upFL.childNodes[u].childNodes[1].innerText);
+                message += '\n>>> '+upFL.childNodes[u].childNodes[1].innerText;
                 flag = 1;
             }
         }
         
         if(flag==1){
-            var yesorno = confirm('체크된 항목을 제외하시겠습니까?\n>>> '+String(exceptList).replaceAll(',','\n>>> '));
+            var yesorno = confirm('체크된 항목을 제외하시겠습니까?'+message);
             if(yesorno){
                 for(var l=0;l<WaitList.wl.length;l++){
                     for(var e=0;e<exceptList.length;e++){
@@ -212,12 +218,28 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
                         }
                     }
                 }
-                alert('체크된 항목을 제외하였습니다.\n>>> '+String(exceptList).replaceAll(',','\n>>> '));
+                alert('체크된 항목을 제외하였습니다.'+message);
             }
         }
         else{
             alert('체크된 항목이 없습니다.');
-            console.log(WaitList.wl);
         }
+    }
+
+    function SendWaitList(){
+        var req = new XMLHttpRequest();
+        var formData = new FormData();
+
+        for(var w=0;w<WaitList.wl.length;w++){
+            formData.append('name',WaitList.wl[w].name);
+            formData.append('size',WaitList.wl[w].size);
+            formData.append(WaitList.wl[w].name, WaitList.wl[w].file);
+        }
+
+        if(w!=0){
+            req.open("POST", 'test.jsp');
+            req.send(formData);
+        }
+
     }
 }
