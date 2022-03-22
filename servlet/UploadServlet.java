@@ -40,6 +40,7 @@ public class UploadServlet extends HttpServlet {
 	    if (ip == null) ip = request.getRemoteAddr();
 		
 		Enumeration fileNames = multi.getFileNames();
+		System.out.println();
 		System.out.println("======="+ip+"=======");
 		while(fileNames.hasMoreElements()) {
 			String val = (String) fileNames.nextElement();

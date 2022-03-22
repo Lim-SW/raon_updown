@@ -5,11 +5,13 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
 
     var up = LoadUI('Upload');
     var dn = LoadUI('Download');
-
+    ListFiles(dn[0]);
     var fileInput = AddB(up[1],'file','fileInput','파일추가');
     fileInput.onchange = function(){Addfile(this,up[0]);}
     var exceptFile = AddB(up[1],'button','exceptFile','파일제외');
     exceptFile.onclick = function(){ExceptFile(up[0]);}
+    var clearList = AddB(up[1],'button','clearList','전부제외');
+    clearList.onclick = function(){ClearList(up[0]);}
     var startUpload = AddB(up[1],'button','startUpload','업로드시작');
     startUpload.onclick = function(){SendWaitList();}
     
@@ -58,7 +60,8 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         fileListDiv.id = key+'fileListDiv_'+id;
         fileListDiv.draggable = 'true';
         
-        fileListDiv.ondrop = function(e){DragDrop(e);}
+        fileListDiv.ondrop = function(e){if(e.target.id=='UploadfileListDiv_'+id){DragDrop(e);}
+                                        else{e.stopPropagation();e.preventDefault();}}
         fileListDiv.ondragover = function(e){e.stopPropagation();e.preventDefault();}
         fileListDiv.ondragleave = function(e){e.stopPropagation();e.preventDefault();}
 
@@ -229,39 +232,41 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     function SendWaitList(){
         var req = new XMLHttpRequest();
         var formData = new FormData();
-        var yesorno = confirm('파일을 업로드 하시겠습니까?\n(※리스트에 존재하는 모든 파일들이 업로드 됩니다.※)');
-        if(yesorno){
-            for(var w=0;w<WaitList.wl.length;w++){
-                formData.append('name'+w,WaitList.wl[w].name);
-                formData.append('size'+w,WaitList.wl[w].size);
-                formData.append(WaitList.wl[w].name,WaitList.wl[w].file);
-            }
-    
-            if(w!=0){
-                req.open("POST", '/LSWUpDown/UploadServlet');
-                req.send(formData);
-            }
-    
-            req.onreadystatechange = function(){
-                if (req.readyState == XMLHttpRequest.DONE&&req.status==200&&dn[0].childNodes.length!=0){
-                    ListFiles(dn[0]);
+        if(up[0].childNodes.length!=0){
+            var yesorno = confirm('파일을 업로드 하시겠습니까?\n(※리스트에 존재하는 모든 파일들이 업로드 됩니다.※)');
+            if(yesorno){
+                for(var w=0;w<WaitList.wl.length;w++){
+                    formData.append('name'+w,WaitList.wl[w].name);
+                    formData.append('size'+w,WaitList.wl[w].size);
+                    formData.append(WaitList.wl[w].name,WaitList.wl[w].file);
                 }
-                if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
-                    alert('파일 업로드가 완료되었습니다.');
+        
+                if(w!=0){
+                    req.open("POST", '/LSWUpDown/UploadServlet');
+                    req.send(formData);
+                }
+        
+                req.onreadystatechange = function(){
+                    // req.onreadystatechange = callbackFunction; 응답수행
+                    // 프로그래스 바 연결 받아서 띄워야 하나?? 그럼 계속 연결 하고 있어야 할듯??
+                    // 프로그래스 바를 여기서 처리해야되나 저기서 해야되나?
+                    // 성공응답 받으면 알림띄우기
+                    if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                        ListFiles(dn[0]);
+                        ClearList(up[0],'no');
+                        alert('파일 업로드가 완료되었습니다.');
+                    }
                 }
             }
         }
-
-        // req.onreadystatechange = callbackFunction; 응답수행
-        // 프로그래스 바 연결 받아서 띄워야 하나?? 그럼 계속 연결 하고 있어야 할듯??
-        // 프로그래스 바를 여기서 처리해야되나 저기서 해야되나?
-        // 성공응답 받으면 알림띄우기
-
+        else{
+            alert('파일을 추가해주세요.');
+        }
     }
 
     function DragDrop(e){
         e.preventDefault();
-        Addfile(e.dataTransfer);
+        Addfile(e.dataTransfer,up[0]);
     }
 
     function ListFiles(where){
@@ -315,6 +320,22 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         }
         else{
             alert('체크된 항목이 없습니다.');
+        }
+    }
+
+    function ClearList(where,yn) {
+        if(where.childNodes.length!=0){
+            if(yn!='no'){
+                var yes=confirm('전부 제외하시겠습니까?');
+                if(yes){
+                    where.innerHTML='';
+                    WaitList.wl = [];
+                }
+            }
+            else{
+                where.innerHTML='';
+                WaitList.wl = [];
+            }
         }
     }
 }
