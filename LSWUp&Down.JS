@@ -3,24 +3,22 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     LSWUpDownFileWaitList.prototype.IsIE = IsIE();
     var WaitList = new LSWUpDownFileWaitList();
 
-    var upBP = LoadUI('Upload');
-    var dnBP = LoadUI('Download');
+    var up = LoadUI('Upload');
+    var dn = LoadUI('Download');
 
-    var fileInput = AddB(upBP,'file','fileInput','파일추가');
-    fileInput.onchange = function(){Addfile(this);}
-    var exceptFile = AddB(upBP,'button','exceptFile','파일제외');
-    exceptFile.onclick = function(){ExceptFile();}
-    var startUpload = AddB(upBP,'button','startUpload','업로드시작');
+    var fileInput = AddB(up[1],'file','fileInput','파일추가');
+    fileInput.onchange = function(){Addfile(this,up[0]);}
+    var exceptFile = AddB(up[1],'button','exceptFile','파일제외');
+    exceptFile.onclick = function(){ExceptFile(up[0]);}
+    var startUpload = AddB(up[1],'button','startUpload','업로드시작');
     startUpload.onclick = function(){SendWaitList();}
-
-    var refresh = AddB(dnBP,'button','refresh','불러오기');
-    refresh.onclick = function(){/*함수 추가해야함*/}
-    var deleteFile = AddB(dnBP,'button','deleteFile','파일삭제');
-    deleteFile.onclick = function(){/*함수 추가해야함*/}
-    var startDownload = AddB(dnBP,'button','startDownload','다운로드시작');
+    
+    var refresh = AddB(dn[1],'button','refresh','불러오기');
+    refresh.onclick = function(){ListFiles(dn[0]);}
+    var deleteFile = AddB(dn[1],'button','deleteFile','파일삭제');
+    deleteFile.onclick = function(){DeleteFile(dn[0])}
+    var startDownload = AddB(dn[1],'button','startDownload','다운로드시작');
     startDownload.onclick = function(){/*함수 추가해야함*/}
-
-    //var formData = new FormData();
 
     function LSWUpDownFileWaitList() {// 파일 오브젝트 프로토타입용 함수
     }
@@ -97,8 +95,8 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         // 붙히기
         Div.appendChild(Place);
         Div.appendChild(ButtonPlace);
-
-        return ButtonPlace_Div;
+        
+        return [fileListDiv, ButtonPlace_Div];
     }
 
     function IsIE() { // 브라우저 IE 체크 함수
@@ -164,9 +162,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
     }
 
-    function Addfile(th){ // 파일추가 기능
-        var place = document.getElementById('UploadPlace_'+id);
-        var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
+    function Addfile(th, where){ // 파일추가 기능
         var same = '개 제외하였습니다.\n';
         var add = '개의 파일을 추가하였습니다.\n';
         var sameCount = 0;
@@ -174,8 +170,8 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
             var tempF = th.files[f];
             var calSize = bytesToSize(tempF.size);
             var flag = 0;
-            for(var u=0;u<upFL.childNodes.length;u++){
-                if(upFL.childNodes[u].childNodes[1].innerText == tempF.name && upFL.childNodes[u].childNodes[2].innerText == calSize){
+            for(var u=0;u<where.childNodes.length;u++){
+                if(where.childNodes[u].childNodes[1].innerText == tempF.name && where.childNodes[u].childNodes[2].innerText == calSize){
                     same += ('>>> '+tempF.name+'\n');
                     sameCount += 1;
                     flag = 1;
@@ -184,7 +180,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
             }
             if(flag == 0){
                 add+=('>>> '+tempF.name+'\n');
-                LoadFile(upFL, tempF.name, calSize);
+                LoadFile(where, tempF.name, calSize);
                 WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF});
             }
         }
@@ -196,16 +192,15 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         th.value = '';
     }
 
-    function ExceptFile(){ // 파일제외 기능
+    function ExceptFile(where){ // 파일제외 기능
         var place = document.getElementById('UploadPlace_'+id);
-        var upFL = place.contentDocument.getElementById('UploadfileListDiv_'+id);
         var flag = 0;
         var exceptList = [];
         var message = '';
-        for(var u=0;u<upFL.childNodes.length;u++){
-            if(upFL.childNodes[u].childNodes[0].checked){
-                exceptList.push(upFL.childNodes[u].childNodes[1].innerText);
-                message += '\n>>> '+upFL.childNodes[u].childNodes[1].innerText;
+        for(var u=0;u<where.childNodes.length;u++){
+            if(where.childNodes[u].childNodes[0].checked){
+                exceptList.push(where.childNodes[u].childNodes[1].innerText);
+                message += '\n>>> '+where.childNodes[u].childNodes[1].innerText;
                 flag = 1;
             }
         }
@@ -217,7 +212,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
                     for(var e=0;e<exceptList.length;e++){
                         if(WaitList.wl[l].name == exceptList[e]){
                             var ed = place.contentDocument.getElementById(WaitList.wl[l].name+' '+WaitList.wl[l].size);
-                            upFL.removeChild(ed);
+                            where.removeChild(ed);
                             WaitList.wl.splice(l,1);
                             e--;l--;break;
                         }
@@ -234,23 +229,92 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
     function SendWaitList(){
         var req = new XMLHttpRequest();
         var formData = new FormData();
-
-        for(var w=0;w<WaitList.wl.length;w++){
-            formData.append('name'+w,WaitList.wl[w].name);
-            formData.append('size'+w,WaitList.wl[w].size);
+        var yesorno = confirm('파일을 업로드 하시겠습니까?\n(※리스트에 존재하는 모든 파일들이 업로드 됩니다.※)');
+        if(yesorno){
+            for(var w=0;w<WaitList.wl.length;w++){
+                formData.append('name'+w,WaitList.wl[w].name);
+                formData.append('size'+w,WaitList.wl[w].size);
+                formData.append(WaitList.wl[w].name,WaitList.wl[w].file);
+            }
+    
+            if(w!=0){
+                req.open("POST", '/LSWUpDown/UploadServlet');
+                req.send(formData);
+            }
+    
+            req.onreadystatechange = function(){
+                if (req.readyState == XMLHttpRequest.DONE&&req.status==200&&dn[0].childNodes.length!=0){
+                    ListFiles(dn[0]);
+                }
+                if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                    alert('파일 업로드가 완료되었습니다.');
+                }
+            }
         }
 
-        if(w!=0){
-            req.open("POST", 'test.jsp');
-            req.send(formData);
-        }
-
-        //req.onreadystatechange = callbackFunction; 응답수행
+        // req.onreadystatechange = callbackFunction; 응답수행
+        // 프로그래스 바 연결 받아서 띄워야 하나?? 그럼 계속 연결 하고 있어야 할듯??
+        // 프로그래스 바를 여기서 처리해야되나 저기서 해야되나?
+        // 성공응답 받으면 알림띄우기
 
     }
 
     function DragDrop(e){
         e.preventDefault();
         Addfile(e.dataTransfer);
+    }
+
+    function ListFiles(where){
+        var req = new XMLHttpRequest();
+        req.open('service','/LSWUpDown/RefreshServlet');
+        req.send();
+        
+        req.onreadystatechange = function(){
+            where.innerHTML = '';
+            if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                var fileSplit = req.responseText.split('/');
+                fileSplit.pop();
+                for(var f=0;f<fileSplit.length;f+=2){
+                    LoadFile(where, fileSplit[f], bytesToSize(fileSplit[f+1]));
+                }
+            }
+        }
+    }
+
+    function DeleteFile(where){
+        var flag = 0;
+        var deleteList = [];
+        var message = '';
+        for(var u=0;u<where.childNodes.length;u++){
+            if(where.childNodes[u].childNodes[0].checked){
+                deleteList.push(where.childNodes[u].childNodes[1].innerText);
+                message += '\n>>> '+where.childNodes[u].childNodes[1].innerText;
+                flag = 1;
+            }
+        }
+        
+        if(flag==1){
+            var yesorno = confirm('체크된 항목을 삭제하시겠습니까?\n(※실제 서버에서 삭제됩니다.※)\n'+message);
+            if(yesorno){
+                var req = new XMLHttpRequest();
+                var formData = new FormData();
+        
+                for(var w=0;w<deleteList.length;w++){
+                    formData.append('name'+w,deleteList[w]);
+                }
+
+                req.open('service','/LSWUpDown/DeleteServlet');
+                req.send(formData);
+                req.onreadystatechange = function(){
+                    if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                        ListFiles(dn[0]);
+                        alert('체크된 항목을 삭제하였습니다.'+message);
+                    }
+                }
+            }
+        }
+        else{
+            alert('체크된 항목이 없습니다.');
+        }
     }
 }
