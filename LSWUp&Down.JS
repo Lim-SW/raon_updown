@@ -1,27 +1,30 @@
-function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
+function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함수
     LSWUpDownFileWaitList.prototype.wl = []; // 프로토타입으로 파일 오브젝트 보관
     LSWUpDownFileWaitList.prototype.IsIE = IsIE();
     var WaitList = new LSWUpDownFileWaitList();
 
-    var up = LoadUI('Upload');
-    var dn = LoadUI('Download');
-    ListFiles(dn[0]);
-    var fileInput = AddB(up[1],'file','fileInput','파일추가');
+    var up = LoadUI('Upload'); // 업로드 영역 UI 생성
+    var dn = LoadUI('Download'); // 다운로드 영역 UI 생성
+    
+    var fileInput = AddB(up[1],'file','fileInput','파일추가'); // 업로드 영역 버튼+리스너
     fileInput.onchange = function(){Addfile(this,up[0]);}
     var exceptFile = AddB(up[1],'button','exceptFile','파일제외');
-    exceptFile.onclick = function(){ExceptFile(up[0]);}
+    exceptFile.onclick = function(){ControlFile(up[0],'except');}
     var clearList = AddB(up[1],'button','clearList','전부제외');
-    clearList.onclick = function(){ClearList(up[0]);}
+    clearList.onclick = function(){ClearList(up[0],'제외');}
     var startUpload = AddB(up[1],'button','startUpload','업로드시작');
     startUpload.onclick = function(){SendWaitList();}
     
-    var refresh = AddB(dn[1],'button','refresh','불러오기');
+    var refresh = AddB(dn[1],'button','refresh','불러오기'); // 다운로드영역 버튼+리스너
     refresh.onclick = function(){ListFiles(dn[0]);}
     var deleteFile = AddB(dn[1],'button','deleteFile','파일삭제');
-    deleteFile.onclick = function(){DeleteFile(dn[0])}
+    deleteFile.onclick = function(){ControlFile(dn[0],'delete')}
+    var clearFiles = AddB(dn[1],'button','clearFiles','전부삭제');
+    clearFiles.onclick = function(){ClearList(dn[0],'삭제');}
     var startDownload = AddB(dn[1],'button','startDownload','다운로드시작');
-    startDownload.onclick = function(){/*함수 추가해야함*/}
+    startDownload.onclick = function(){ControlFile(dn[0],'download')}
 
+    // 여기부터 LoadLSWUpDown 에서만 사용할 함수들
     function LSWUpDownFileWaitList() {// 파일 오브젝트 프로토타입용 함수
     }
 
@@ -72,6 +75,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
             Place.contentDocument.body.style.marginRight = '0px';
             }
             Place.contentDocument.body.style.margin = '0';
+            if(key=='Download'){ListFiles(fileListDiv);}
         })
 
         // 버튼영역
@@ -140,7 +144,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         where.appendChild(tempFileDiv);
     }
 
-    function AddB(where, buttonType, buttonId, buttonText){ // 버튼추가
+    function AddB(where, buttonType, buttonId, buttonText){ // UI에 버튼추가
         var inputDiv = document.createElement('div');
         inputDiv.className = 'inputdiv';
         var fileInput = document.createElement('input');
@@ -195,41 +199,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         th.value = '';
     }
 
-    function ExceptFile(where){ // 파일제외 기능
-        var place = document.getElementById('UploadPlace_'+id);
-        var flag = 0;
-        var exceptList = [];
-        var message = '';
-        for(var u=0;u<where.childNodes.length;u++){
-            if(where.childNodes[u].childNodes[0].checked){
-                exceptList.push(where.childNodes[u].childNodes[1].innerText);
-                message += '\n>>> '+where.childNodes[u].childNodes[1].innerText;
-                flag = 1;
-            }
-        }
-        
-        if(flag==1){
-            var yesorno = confirm('체크된 항목을 제외하시겠습니까?'+message);
-            if(yesorno){
-                for(var l=0;l<WaitList.wl.length;l++){
-                    for(var e=0;e<exceptList.length;e++){
-                        if(WaitList.wl[l].name == exceptList[e]){
-                            var ed = place.contentDocument.getElementById(WaitList.wl[l].name+' '+WaitList.wl[l].size);
-                            where.removeChild(ed);
-                            WaitList.wl.splice(l,1);
-                            e--;l--;break;
-                        }
-                    }
-                }
-                alert('체크된 항목을 제외하였습니다.'+message);
-            }
-        }
-        else{
-            alert('체크된 항목이 없습니다.');
-        }
-    }
-
-    function SendWaitList(){
+    function SendWaitList(){ // 업로드 리스트에 있는 파일 업로드 시작
         var req = new XMLHttpRequest();
         var formData = new FormData();
         if(up[0].childNodes.length!=0){
@@ -253,7 +223,7 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
                     // 성공응답 받으면 알림띄우기
                     if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                         ListFiles(dn[0]);
-                        ClearList(up[0],'no');
+                        ClearList(up[0],'','no');
                         alert('파일 업로드가 완료되었습니다.');
                     }
                 }
@@ -264,12 +234,12 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         }
     }
 
-    function DragDrop(e){
+    function DragDrop(e){ // 드래그 앤 드롭으로 업로드 리스트에 파일 추가
         e.preventDefault();
         Addfile(e.dataTransfer,up[0]);
     }
 
-    function ListFiles(where){
+    function ListFiles(where){ // 다운로드 리스트에 파일 불러오기(새로고침)
         var req = new XMLHttpRequest();
         req.open('service','/LSWUpDown/RefreshServlet');
         req.send();
@@ -286,34 +256,57 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         }
     }
 
-    function DeleteFile(where){
+    function ControlFile(where, tag){ // 체크된 파일 컨트롤(제외,삭제,다운로드)
         var flag = 0;
-        var deleteList = [];
+        var controlList = [];
         var message = '';
         for(var u=0;u<where.childNodes.length;u++){
             if(where.childNodes[u].childNodes[0].checked){
-                deleteList.push(where.childNodes[u].childNodes[1].innerText);
+                controlList.push(where.childNodes[u].childNodes[1].innerText);
                 message += '\n>>> '+where.childNodes[u].childNodes[1].innerText;
                 flag = 1;
             }
         }
         
         if(flag==1){
-            var yesorno = confirm('체크된 항목을 삭제하시겠습니까?\n(※실제 서버에서 삭제됩니다.※)\n'+message);
-            if(yesorno){
-                var req = new XMLHttpRequest();
-                var formData = new FormData();
-        
-                for(var w=0;w<deleteList.length;w++){
-                    formData.append('name'+w,deleteList[w]);
-                }
+            var yesorno = null;
+            if(tag=='delete'){yesorno=confirm('체크된 항목을 삭제하시겠습니까?\n(※실제 서버에서 삭제됩니다.※)\n'+message);}
+            else if(tag=='download'){yesorno=confirm('체크된 항목을 다운로드 하시겠습니까?\n'+message);}
+            else if(tag=='except'){yesorno=confirm('체크된 항목을 제외하시겠습니까?'+message);}
 
-                req.open('service','/LSWUpDown/DeleteServlet');
-                req.send(formData);
-                req.onreadystatechange = function(){
-                    if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
-                        ListFiles(dn[0]);
-                        alert('체크된 항목을 삭제하였습니다.'+message);
+            if(yesorno!=null&&yesorno){
+                if(tag=='except'){
+                    var place = document.getElementById('UploadPlace_'+id);
+                    for(var l=0;l<WaitList.wl.length;l++){
+                        for(var e=0;e<controlList.length;e++){
+                            if(WaitList.wl[l].name == controlList[e]){
+                                var ed = place.contentDocument.getElementById(WaitList.wl[l].name+' '+WaitList.wl[l].size);
+                                where.removeChild(ed);
+                                WaitList.wl.splice(l,1);
+                                e--;l--;break;
+                            }
+                        }
+                    }
+                    alert('체크된 항목을 제외하였습니다.'+message);
+                }
+                else{
+                    var req = new XMLHttpRequest();
+                    var formData = new FormData();
+            
+                    for(var w=0;w<controlList.length;w++){
+                        if(tag=='download'){formData = new FormData();}
+                        formData.append('name'+w,controlList[w]);
+                        if(tag=='download'){req.open('service','/LSWUpDown/DownloadServlet',false);req.send(formData);}
+                    }
+    
+                    if(tag=='delete'){req.open('service','/LSWUpDown/DeleteServlet');req.send(formData);}
+                    
+                    req.onreadystatechange = function(){
+                        if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                            ListFiles(dn[0]);
+                            if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.'+message);}
+                            else if(tag=='download'){console.log(req.response);}
+                        }
                     }
                 }
             }
@@ -323,13 +316,30 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
         }
     }
 
-    function ClearList(where,yn) {
+    function ClearList(where,str,yn) { // 업로드, 다운로드 리스트 초기화
         if(where.childNodes.length!=0){
             if(yn!='no'){
-                var yes=confirm('전부 제외하시겠습니까?');
-                if(yes){
+                var yes=confirm('전부 '+str+'하시겠습니까?');
+                if(yes&&str=='제외'){
                     where.innerHTML='';
                     WaitList.wl = [];
+                }
+                else if(yes&&str=='삭제'){
+                    var req = new XMLHttpRequest();
+                    var formData = new FormData();
+
+                    for(var u=0;u<where.childNodes.length;u++){
+                        formData.append('name'+u,where.childNodes[u].childNodes[1].innerText);
+                    }
+
+                    req.open('service','/LSWUpDown/DeleteServlet');
+                    req.send(formData);
+                    req.onreadystatechange = function(){
+                        if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
+                            ListFiles(dn[0]);
+                        }
+                    }
+                    alert('전부 삭제하였습니다.');
                 }
             }
             else{
@@ -337,5 +347,17 @@ function LoadLSWUpDown(id, width, height, divName){// 에디터 생성 함수
                 WaitList.wl = [];
             }
         }
+        else{
+            alert(str+'할 항목이 없습니다.');
+        }
+    }
+
+    function DownloadFiles(path, file){
+        var element = document.createElement('a');
+        element.setAttribute('href',path);
+        element.setAttribute('download', filename);
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     }
 }

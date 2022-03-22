@@ -31,8 +31,11 @@ public class DeleteServlet extends HttpServlet {
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8", new DefaultFileRenamePolicy());
     	Enumeration fileNames = multi.getParameterNames();
 		
-    	File file = null;
+	    String ip = request.getHeader("X-Forwarded-For");
+	    if (ip == null) ip = request.getRemoteAddr();
     	
+    	File file = null;
+		System.out.println("======="+ip+"=======");
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
@@ -40,7 +43,9 @@ public class DeleteServlet extends HttpServlet {
 			path += val;
 			file = new File(path);
 			file.delete();
+			System.out.println("<파일삭제> "+path);
 		}
+    	System.out.println("=============================");
 	}
 
 }
