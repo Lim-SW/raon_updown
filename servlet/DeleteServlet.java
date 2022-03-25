@@ -35,6 +35,7 @@ public class DeleteServlet extends HttpServlet {
 	    if (ip == null) ip = request.getRemoteAddr();
     	
     	File file = null;
+    	System.out.println();
 		System.out.println("======="+ip+"=======");
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";

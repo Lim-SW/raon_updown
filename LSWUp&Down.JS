@@ -294,19 +294,33 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     var formData = new FormData();
             
                     for(var w=0;w<controlList.length;w++){
-                        if(tag=='download'){formData = new FormData();}
                         formData.append('name'+w,controlList[w]);
-                        if(tag=='download'){req.open('service','/LSWUpDown/DownloadServlet',false);req.send(formData);}
-                    }
-    
+                        }
+
                     if(tag=='delete'){req.open('service','/LSWUpDown/DeleteServlet');req.send(formData);}
+                    else if(tag=='download'){req.open('POST','/LSWUpDown/DownloadServlet');req.responseType="blob";req.send(formData);}
                     
                     req.onreadystatechange = function(){
                         if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
                             ListFiles(dn[0]);
                             if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.'+message);}
-                            else if(tag=='download'){console.log(req.response);}
-                        }
+                            else if(tag=='download'){
+                                DownloadFiles(req.response,controlList,w);
+                                
+
+                                //console.log(req.response); // 이걸 인풋스트림으로 받아야하나?
+                                //var item = document.createElement('input');
+                                //item.type = 'file';
+                                
+                                /*
+                                var fr = new FileReader();
+                                var blob = new Blob([req.response]);
+                                console.log(fr.readAsDataURL(blob));
+                                fr.onload = function(){
+                                    DownloadFiles(fr.readAsDataURL(blob), controlList);
+                                }*/
+                            }       
+                        }   
                     }
                 }
             }
@@ -352,12 +366,20 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         }
     }
 
-    function DownloadFiles(path, file){
+    function DownloadFiles(response,fn,isZip){
+        if(isZip>1){
+            fn = "LSWUp&Down_"
+            var today = new Date();
+            fn += today.toLocaleString();
+            fn+=".zip";
+        }
+        var blob = response;
         var element = document.createElement('a');
-        element.setAttribute('href',path);
-        element.setAttribute('download', filename);
+        element.href = window.URL.createObjectURL(blob);
+        element.download = fn;
         document.body.appendChild(element);
-        element.click();
+        if(WaitList.IsIE){navigator.msSaveOrOpenBlob(blob,fn);}
+        else{element.click();}
         document.body.removeChild(element);
     }
 }

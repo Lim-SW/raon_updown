@@ -2,9 +2,16 @@
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -25,12 +32,15 @@ public class DownloadServlet extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-
-	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String path = "D:\\LSWUpload\\Uploaded";
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+    	doPost(request, response);
+    }
+    
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String path = "D:\\LSWUpload\\Uploaded\\";
 		String val = "";
 		int size = (1024 * 1024 * 2000) + 1;
-		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8", new DefaultFileRenamePolicy());
+		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
@@ -38,6 +48,9 @@ public class DownloadServlet extends HttpServlet {
 		Enumeration fileNames = multi.getParameterNames();
 		
     	File file = null;
+    	List<File> files = new ArrayList<>();
+    	
+    	int sum = 0;
     	
 		System.out.println();
 		System.out.println("======="+ip+"=======");
@@ -47,27 +60,79 @@ public class DownloadServlet extends HttpServlet {
 			val = multi.getParameter(val);
 			path += val;
 			file = new File(path);
-			// 여기서 다운로드 시켜
-			byte[] b =new byte[(int)file.length()+1];
-			FileInputStream in =new FileInputStream(file);
-			String mimeType = getServletContext().getMimeType(path);
+			files.add(file);
+			sum+=(int)file.length()+1;
+			System.out.println("<다운로드> "+val);
+		}
+		
+		if(files.size()>1) {
+			LocalDateTime now = LocalDateTime.now();
+			String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
+			
+			File zip = new File("D:\\LSWUpload\\",ip+", "+formatedNow+".zip");
+			
+			byte[] b =new byte[sum];
+			
+	        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
+	            for (File f : files) {
+	                try (FileInputStream in = new FileInputStream(f)) {
+	                    ZipEntry ze = new ZipEntry(f.getName());
+	                    out.putNextEntry(ze);
+	 
+	                    int len;
+	                    while ((len = in.read(b)) > 0) {
+	                        out.write(b, 0, len);
+	                    }
+	 
+	                    out.closeEntry();
+	                }
+	 
+	            }
+	        }
+			
+			FileInputStream in2 =new FileInputStream(zip);
+			String mimeType = getServletContext().getMimeType(zip.toString());
 			if(mimeType == null) {
 				mimeType = "application/octet-stream";
 			}
 			response.setContentType(mimeType);
-	        String sEncoding = new String(file.getName().getBytes("UTF-8"));
-	        String value = String.format("attachment; fileName= \"%s\"" , sEncoding);
+	        String sEncoding = new String(zip.getName().getBytes("UTF-8"));
+	        String value = "attachment;filename=\""+sEncoding+"\"";
 	        response.setHeader("Content-Disposition", value);
-	        OutputStream out = response.getOutputStream();
+	        ServletOutputStream out2 = response.getOutputStream();
 	        
 	        int read;
-	        while((read = in.read(b,0,b.length))!= -1){
-	        	out.write(b,0,read);
+	        while((read = in2.read(b,0,b.length))!= -1){
+	        	out2.write(b,0,read);
 	        }
-	        in.close();
-	        out.close();
-			System.out.println("<다운로드> "+val);
+	        in2.close();
+	        out2.close();
+	        zip.delete(); // 확인하고 싶으면 여기
+			//System.out.println(zip);
+        }
+		
+		else {
+			byte[] b = new byte[(int)file.length()+1];
+			FileInputStream in = new FileInputStream(file);
+			String mimeType = getServletContext().getMimeType(file.toString());
+			if(mimeType == null) {
+				mimeType = "application/octet-stream";
+			}
+			response.setContentType(mimeType);
+			String fileName = val;
+			String sEncoding = new String(fileName.getBytes("euc-kr"),"8859_1");
+		    String value = "attachment;filename=\""+sEncoding+"\"";
+		    response.setHeader("Content-Disposition", value);
+		    ServletOutputStream out = response.getOutputStream();
+		        
+		    int read;
+		    while((read = in.read(b,0,b.length))!= -1){
+		     	out.write(b,0,read);
+		    }
+		    in.close();
+		    out.close();
 		}
+
 		System.out.println("=============================");
 	}
 
