@@ -64,12 +64,13 @@ public class DownloadServlet extends HttpServlet {
 			sum+=(int)file.length()+1;
 			System.out.println("<다운로드> "+val);
 		}
+		System.out.println("=============================");
 		
 		if(files.size()>1) {
 			LocalDateTime now = LocalDateTime.now();
 			String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 			
-			File zip = new File("D:\\LSWUpload\\",ip+", "+formatedNow+".zip");
+			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
 			
 			byte[] b =new byte[sum];
 			
@@ -83,14 +84,12 @@ public class DownloadServlet extends HttpServlet {
 	                    while ((len = in.read(b)) > 0) {
 	                        out.write(b, 0, len);
 	                    }
-	 
 	                    out.closeEntry();
 	                }
-	 
 	            }
 	        }
 			
-			FileInputStream in2 =new FileInputStream(zip);
+			FileInputStream in2 = new FileInputStream(zip);
 			String mimeType = getServletContext().getMimeType(zip.toString());
 			if(mimeType == null) {
 				mimeType = "application/octet-stream";
@@ -99,6 +98,7 @@ public class DownloadServlet extends HttpServlet {
 	        String sEncoding = new String(zip.getName().getBytes("UTF-8"));
 	        String value = "attachment;filename=\""+sEncoding+"\"";
 	        response.setHeader("Content-Disposition", value);
+	        response.setContentLengthLong(zip.length());
 	        ServletOutputStream out2 = response.getOutputStream();
 	        
 	        int read;
@@ -123,6 +123,7 @@ public class DownloadServlet extends HttpServlet {
 			String sEncoding = new String(fileName.getBytes("euc-kr"),"8859_1");
 		    String value = "attachment;filename=\""+sEncoding+"\"";
 		    response.setHeader("Content-Disposition", value);
+		    response.setContentLengthLong(file.length());
 		    ServletOutputStream out = response.getOutputStream();
 		        
 		    int read;
@@ -132,8 +133,6 @@ public class DownloadServlet extends HttpServlet {
 		    in.close();
 		    out.close();
 		}
-
-		System.out.println("=============================");
 	}
 
 }

@@ -44,7 +44,7 @@ public class DeleteServlet extends HttpServlet {
 			path += val;
 			file = new File(path);
 			file.delete();
-			System.out.println("<파일삭제> "+path);
+			System.out.println("<파일삭제> "+val);
 		}
     	System.out.println("=============================");
 	}

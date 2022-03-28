@@ -213,14 +213,15 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         
                 if(w!=0){
                     req.open("POST", '/LSWUpDown/UploadServlet');
+                    req.upload.onprogress = function(e){
+                        if (e.lengthComputable) {
+                            var percentComplete = e.loaded / e.total;
+                            console.log(percentComplete);
+                        }
+                    }
                     req.send(formData);
                 }
-        
                 req.onreadystatechange = function(){
-                    // req.onreadystatechange = callbackFunction; 응답수행
-                    // 프로그래스 바 연결 받아서 띄워야 하나?? 그럼 계속 연결 하고 있어야 할듯??
-                    // 프로그래스 바를 여기서 처리해야되나 저기서 해야되나?
-                    // 성공응답 받으면 알림띄우기
                     if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                         ListFiles(dn[0]);
                         ClearList(up[0],'','no');
@@ -298,29 +299,24 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                         }
 
                     if(tag=='delete'){req.open('service','/LSWUpDown/DeleteServlet');req.send(formData);}
-                    else if(tag=='download'){req.open('POST','/LSWUpDown/DownloadServlet');req.responseType="blob";req.send(formData);}
-                    
+                    else if(tag=='download'){
+                        req.open('POST','/LSWUpDown/DownloadServlet');
+                        req.responseType="blob";
+                        req.onprogress = function(e){
+                            var percentComplete = e.loaded / e.total;
+                            console.log(percentComplete);
+                        }
+                        req.send(formData);
+                    }
+
                     req.onreadystatechange = function(){
                         if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
                             ListFiles(dn[0]);
                             if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.'+message);}
                             else if(tag=='download'){
                                 DownloadFiles(req.response,controlList,w);
-                                
-
-                                //console.log(req.response); // 이걸 인풋스트림으로 받아야하나?
-                                //var item = document.createElement('input');
-                                //item.type = 'file';
-                                
-                                /*
-                                var fr = new FileReader();
-                                var blob = new Blob([req.response]);
-                                console.log(fr.readAsDataURL(blob));
-                                fr.onload = function(){
-                                    DownloadFiles(fr.readAsDataURL(blob), controlList);
-                                }*/
                             }       
-                        }   
+                        }
                     }
                 }
             }
@@ -366,7 +362,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         }
     }
 
-    function DownloadFiles(response,fn,isZip){
+    function DownloadFiles(response,fn,isZip){ // response로 blob url 생성후 다운로드
         if(isZip>1){
             fn = "LSWUp&Down_"
             var today = new Date();
