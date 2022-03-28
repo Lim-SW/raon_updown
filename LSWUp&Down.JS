@@ -62,21 +62,67 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         fileListDiv.className = 'fileList';
         fileListDiv.id = key+'fileListDiv_'+id;
         fileListDiv.draggable = 'true';
-        
-        fileListDiv.ondrop = function(e){if(e.target.id=='UploadfileListDiv_'+id){DragDrop(e);}
-                                        else{e.stopPropagation();e.preventDefault();}}
+
+        fileListDiv.ondrop = function(e){
+            if(e.target.id=='UploadfileListDiv_'+id){DragDrop(e);}
+            else{e.stopPropagation();e.preventDefault();}
+        }
         fileListDiv.ondragover = function(e){e.stopPropagation();e.preventDefault();}
         fileListDiv.ondragleave = function(e){e.stopPropagation();e.preventDefault();}
 
         Place.addEventListener('load',function(){
             Place.contentDocument.body.appendChild(nameDiv);
             Place.contentDocument.body.appendChild(fileListDiv);
+            Place.contentDocument.body.appendChild(modal);
             if(WaitList.IsIE){// IE용 사이즈 조절
             Place.contentDocument.body.style.marginRight = '0px';
             }
             Place.contentDocument.body.style.margin = '0';
             if(key=='Download'){ListFiles(fileListDiv);}
         })
+
+        // modal 영역
+        var modal = document.createElement('div');
+        modal.id = 'modal';
+        modal.className = 'modal-overlay';
+        modal.style.display = 'none';
+
+        var modalWindow = document.createElement('div');
+        modalWindow.className = 'modal-window';
+
+        var modalTitle = document.createElement('div');
+        modalTitle.className = 'title';
+        modalWindow.appendChild(modalTitle);
+        var modalH2 = document.createElement('h2');
+        modalH2.innerText = 'LSWUp&Down';
+        modalTitle.appendChild(modalH2);
+
+        var closeArea = document.createElement('div');
+        closeArea.ir = 'closeArea';
+        closeArea.className = 'close-area';
+        closeArea.innerText = 'X';
+        closeArea.onclick = function(){
+            progressBar2.style.width = '0%';
+            percent.innerText = '0%'
+            modal.style.display = 'none';
+        }
+        modalWindow.appendChild(closeArea);
+
+        // 진행바 영역
+        var progressBar = document.createElement('div');
+        progressBar.className = 'pregress-bar';
+        progressBar.id = 'progressBar';
+        var progressBar2 = document.createElement('div');
+        progressBar2.className = 'progress-bar__bar';
+        progressBar.appendChild(progressBar2);
+
+        var percent = document.createElement('div');
+        percent.id = 'percent';
+        percent.innerText = '0%';
+        
+        modal.appendChild(modalWindow);
+        modalWindow.appendChild(progressBar);
+        modalWindow.appendChild(percent);
 
         // 버튼영역
         var ButtonPlace = document.createElement('iframe');
@@ -205,6 +251,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         if(up[0].childNodes.length!=0){
             var yesorno = confirm('파일을 업로드 하시겠습니까?\n(※리스트에 존재하는 모든 파일들이 업로드 됩니다.※)');
             if(yesorno){
+                var place = document.getElementById('UploadPlace_'+id);
+                var modal = place.contentDocument.getElementById('modal');
                 for(var w=0;w<WaitList.wl.length;w++){
                     formData.append('name'+w,WaitList.wl[w].name);
                     formData.append('size'+w,WaitList.wl[w].size);
@@ -212,11 +260,16 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                 }
         
                 if(w!=0){
+                    modal.style.display = 'flex';
+                    modal.childNodes[0].childNodes[1].style.display ='none';
                     req.open("POST", '/LSWUpDown/UploadServlet');
                     req.upload.onprogress = function(e){
                         if (e.lengthComputable) {
                             var percentComplete = e.loaded / e.total;
-                            console.log(percentComplete);
+                            percentComplete *= 100;
+                            percentComplete = percentComplete.toFixed(2);
+                            modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
+                            modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
                         }
                     }
                     req.send(formData);
@@ -225,7 +278,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                         ListFiles(dn[0]);
                         ClearList(up[0],'','no');
-                        alert('파일 업로드가 완료되었습니다.');
+                        modal.childNodes[0].childNodes[3].innerText = "100.00%\n파일 업로드가 완료되었습니다.";
+                        modal.childNodes[0].childNodes[1].style.display ='flex';
                     }
                 }
             }
@@ -291,6 +345,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     alert('체크된 항목을 제외하였습니다.'+message);
                 }
                 else{
+                    var place = document.getElementById('DownloadPlace_'+id);
+                    var modal = place.contentDocument.getElementById('modal');
                     var req = new XMLHttpRequest();
                     var formData = new FormData();
             
@@ -302,9 +358,15 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     else if(tag=='download'){
                         req.open('POST','/LSWUpDown/DownloadServlet');
                         req.responseType="blob";
+                        if(w>1){modal.childNodes[0].childNodes[3].innerText = "파일을 압축중입니다...";}
+                        modal.childNodes[0].childNodes[1].style.display ='none';
+                        modal.style.display = 'flex';
                         req.onprogress = function(e){
                             var percentComplete = e.loaded / e.total;
-                            console.log(percentComplete);
+                            percentComplete *= 100;
+                            percentComplete = percentComplete.toFixed(2);
+                            modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
+                            modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
                         }
                         req.send(formData);
                     }
@@ -314,6 +376,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                             ListFiles(dn[0]);
                             if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.'+message);}
                             else if(tag=='download'){
+                                modal.childNodes[0].childNodes[3].innerText = "100.00%\n파일 다운로드가 완료되었습니다.";
+                                modal.childNodes[0].childNodes[1].style.display ='flex';
                                 DownloadFiles(req.response,controlList,w);
                             }       
                         }
