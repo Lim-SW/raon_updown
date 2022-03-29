@@ -49,7 +49,7 @@ public class UploadServlet extends HttpServlet {
 		}
 		
 		// 이어올리기는 전에 체크 해야된다.
-		int size = (1024 * 1024 * 2000) + 1;
+		int size = (1024 * 1024 * 2048)-1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
 		Enumeration fileNames = multi.getFileNames();

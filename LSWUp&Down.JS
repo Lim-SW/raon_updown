@@ -299,7 +299,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                         modal.childNodes[0].childNodes[4].style.display ='none';
                     }
                     else if(req.status==500||req.status==404||req.status==403){
-                        modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.";
+                        modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다.";
                         modal.childNodes[0].childNodes[1].style.display ='flex';
                         modal.childNodes[0].childNodes[4].style.display ='none';
                     }
@@ -331,7 +331,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                 }
             }
             else if(req.status==500||req.status==404||req.status==403){
-                alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");
+                alert("("+req.status+")오류가 발생하였습니다.");
             }
         }
     }
@@ -417,9 +417,9 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                             }
                         }
                         else if(req.status==500||req.status==404||req.status==403){
-                            if(tag=='delete'){alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");}
+                            if(tag=='delete'){alert("("+req.status+")오류가 발생하였습니다.");}
                             else if(tag=='download'){
-                                modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.";
+                                modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다.";
                                 modal.childNodes[0].childNodes[1].style.display ='flex';
                                 modal.childNodes[0].childNodes[4].style.display ='none';
                             }
@@ -456,7 +456,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                             ListFiles(dn[0]);
                         }
                         else if(req.status==500||req.status==404||req.status==403){
-                            alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");
+                            alert("("+req.status+")오류가 발생하였습니다.");
                         }
                     }
                 }
