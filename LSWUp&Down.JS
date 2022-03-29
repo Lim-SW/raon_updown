@@ -404,6 +404,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     pauseB.onclick = function(){
                         if(req.readyState != XMLHttpRequest.DONE){
                             req.abort();
+                            clearInterval(intv);
                             modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 중단되었습니다.";
                             modal.childNodes[0].childNodes[1].style.display ='flex';
                             modal.childNodes[0].childNodes[4].style.display ='none';
@@ -503,10 +504,10 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                 percent = req2.responseText;
                 modal.childNodes[0].childNodes[3].innerText = percent+"%";
                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = percent+"%";
+                if(percent==100.0){
+                    clearInterval(intv);
+                }
             }
-        }
-        if(percent==100.0){
-            clearInterval(intv);
         }
     }
 }
