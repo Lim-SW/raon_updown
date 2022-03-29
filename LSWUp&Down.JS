@@ -294,7 +294,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                         ListFiles(dn[0]);
                         ClearList(up[0],'','no');
-                        modal.childNodes[0].childNodes[3].innerText = "파일 업로드가 완료되었습니다. 100.00%";
+                        modal.childNodes[0].childNodes[3].innerText = "파일 업로드가 완료되었습니다. 100.0%";
                         modal.childNodes[0].childNodes[1].style.display ='flex';
                         modal.childNodes[0].childNodes[4].style.display ='none';
                     }
@@ -384,18 +384,22 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     else if(tag=='download'){
                         req.open('POST','/LSWUpDown/DownloadServlet');
                         req.responseType="blob";
-                        if(w>1){modal.childNodes[0].childNodes[3].innerText = "파일을 압축중입니다...";}
+                        //if(w>1){modal.childNodes[0].childNodes[3].innerText = "파일을 압축중입니다...";}
                         modal.childNodes[0].childNodes[1].style.display ='none';
                         modal.childNodes[0].childNodes[4].style.display ='flex';
                         modal.style.display = 'flex';
+
                         req.onprogress = function(e){
-                            var percentComplete = e.loaded / e.total;
-                            percentComplete *= 100;
-                            percentComplete = percentComplete.toFixed(2);
-                            modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
-                            modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
+                            if(w<=1){
+                                var percentComplete = e.loaded / e.total;
+                                percentComplete *= 100;
+                                percentComplete = percentComplete.toFixed(2);
+                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
+                                modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
+                            }
                         }
                         req.send(formData);
+                        if(w>1){var intv = setInterval(Percent,500,modal,intv);}
                     }
                     pauseB.onclick = function(){
                         if(req.readyState != XMLHttpRequest.DONE){
@@ -410,7 +414,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                             ListFiles(dn[0]);
                             if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.\n'+message);}
                             else if(tag=='download'){
-                                modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.00%";
+                                clearInterval(intv);
+                                modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.0%";
                                 modal.childNodes[0].childNodes[1].style.display ='flex';
                                 modal.childNodes[0].childNodes[4].style.display ='none';
                                 DownloadFiles(req.response,controlList,w);
@@ -486,5 +491,22 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         if(WaitList.IsIE){navigator.msSaveOrOpenBlob(blob,fn);}
         else{element.click();}
         document.body.removeChild(element);
+    }
+
+    function Percent(modal,intv){
+        var req2 = new XMLHttpRequest();
+        req2.open('GET','/LSWUpDown/DownloadServlet');
+        var percent = 0;
+        req2.send();
+        req2.onreadystatechange = function(){
+            if (req2.readyState == XMLHttpRequest.DONE&&req2.status==200){
+                percent = req2.responseText;
+                modal.childNodes[0].childNodes[3].innerText = percent+"%";
+                modal.childNodes[0].childNodes[2].childNodes[0].style.width = percent+"%";
+            }
+        }
+        if(percent==100.0){
+            clearInterval(intv);
+        }
     }
 }

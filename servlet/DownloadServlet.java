@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -27,13 +29,20 @@ import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 @WebServlet("/DownloadServlet")
 public class DownloadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+    private static Map percentIp = new HashMap<>();
        
     public DownloadServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-    	doPost(request, response);
+    	response.setContentType("text/html");
+		response.setCharacterEncoding("UTF-8");
+		String ip = request.getHeader("X-Forwarded-For");
+	    if (ip == null) ip = request.getRemoteAddr();
+	    String s = String.valueOf(percentIp.get(ip));
+	    response.getWriter().write(s);
+	    //System.out.println(s);
     }
     
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -44,6 +53,7 @@ public class DownloadServlet extends HttpServlet {
 		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
+	    percentIp.put(ip,0);
 		
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
@@ -72,7 +82,11 @@ public class DownloadServlet extends HttpServlet {
 			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
 			//System.out.println(zip);
 			byte[] b =new byte[10000];
-			
+			double progressD = 0;
+			double whole = 0;
+			for (File f : files) {whole += f.length();}
+			double percent = 0;
+			//String s = "";
 	        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
 	            for (File f : files) {
 	                try (FileInputStream in = new FileInputStream(f)) {
@@ -82,17 +96,26 @@ public class DownloadServlet extends HttpServlet {
 	                    int len = 0;
 	                    int bytesBuffered = 0;
 	                    while ((len = in.read(b)) > 0) {
+	                    	progressD += len;
 	                        out.write(b, 0, len);
 	                        bytesBuffered += len;
-	                        if (bytesBuffered > 1024 * 1024) {
+	                        percent = Math.round(progressD/whole*10000)/100.00;
+	                        percentIp.put(ip,percent);
+	                        if (bytesBuffered > 1024 * 1024 * 25) {
 	                            bytesBuffered = 0;
 	                            out.flush();
+	                            percent = Math.round(progressD/whole*10000)/100.00;
+	                            //s = String.valueOf(percent);
+	                            //System.out.println(percent);
 	                        }
 	                    }
 	                    b = new byte[10000];
 	                    out.closeEntry();
 	                }
 	            }
+	            percent = 100.00;
+	            percentIp.put(ip,percent);
+	            //System.out.println(percent);
 	        }
 			
 			FileInputStream in2 = new FileInputStream(zip);
@@ -137,7 +160,7 @@ public class DownloadServlet extends HttpServlet {
 		    while((read = in.read(b,0,b.length))!= -1){
 		     	out.write(b,0,read);
                 bytesBuffered += read;
-                if (bytesBuffered > 1024 * 1024) {
+                if (bytesBuffered > 1024 * 1024 * 25) {
                     bytesBuffered = 0;
                     out.flush();
                 }
