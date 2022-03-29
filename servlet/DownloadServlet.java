@@ -71,7 +71,7 @@ public class DownloadServlet extends HttpServlet {
 			String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 			
 			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
-			
+			System.out.println(zip);
 			byte[] b =new byte[sum];
 			
 	        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
@@ -107,8 +107,8 @@ public class DownloadServlet extends HttpServlet {
 	        }
 	        in2.close();
 	        out2.close();
-	        zip.delete(); // 확인하고 싶으면 여기
-			//System.out.println(zip);
+	        zip.delete();
+			System.out.println(zip);
         }
 		
 		else {

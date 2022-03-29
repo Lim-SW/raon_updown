@@ -1,6 +1,10 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
@@ -28,27 +32,65 @@ public class UploadServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		
-		//response.setContentType("text/html");
-		//response.setCharacterEncoding("UTF-8");
-		//PrintWriter out = response.getWriter();
-		
-		String path = "D:\\LSWUpload\\Uploaded";
-		int size = (1024 * 1024 * 2000) + 1;
-		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8", new DefaultFileRenamePolicy());
-		
-	    String ip = request.getHeader("X-Forwarded-For");
+		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
+	    
+		String path = "D:\\LSWUpload\\"+ip;
+		String realPath = "D:\\LSWUpload\\Uploaded";
+		File folder = new File(path);
+		
+		if (!folder.exists()) {
+			try{
+			    folder.mkdir();
+		        } 
+		        catch(Exception e){
+			    e.getStackTrace();
+			}     
+		}
+		
+		// 이어올리기는 전에 체크 해야된다.
+		int size = (1024 * 1024 * 2000) + 1;
+		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
 		Enumeration fileNames = multi.getFileNames();
 		System.out.println();
 		System.out.println("======="+ip+"=======");
+		String val = "";
+		String fileSize = "";
 		while(fileNames.hasMoreElements()) {
-			String val = (String) fileNames.nextElement();
+			val = (String) fileNames.nextElement();
 			System.out.println("<업로드> "+val);
+			fileSize = multi.getParameter(val+" size");
+			Long longSize = Long.parseLong(fileSize);
+			File checkFile = new File(path+"\\"+val);
+			
+			if(checkFile.exists()) {
+				if(checkFile.length() == longSize) {
+					Path oldfile = Paths.get(path+"\\"+val);
+					Path newfile = Paths.get(realPath+"\\"+val);
+					File nf = new File(realPath+"\\"+val);
+					int i = 1;
+					String newName = "";
+					while(nf.exists()) {
+						int li = val.lastIndexOf(".");
+						newName = val.substring(0, li)+"("+i+")"+val.substring(li, val.length());
+						newfile = Paths.get(realPath+"\\"+newName);
+						nf = new File(realPath+"\\"+newName);
+						i++;
+					}
+					if(newName!="") {System.out.println("└><중복된 파일명 변경> "+newName);}
+					Files.move(oldfile, newfile, StandardCopyOption.ATOMIC_MOVE);
+					checkFile.delete();
+				}
+				else {
+					System.out.println("덜올림");
+				}
+			}
+			else { // notExist
+				System.out.println("fileNotFound");
+			}
 		}
 		System.out.println("=============================");
-		
-		// 프로그래스바 띄우라고 한다 vs 프로그래스바 띄운다
-		// 다 되면 성공응답 보내기 => js 파일로
 	}
+
 }

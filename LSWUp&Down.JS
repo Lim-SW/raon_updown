@@ -103,7 +103,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         closeArea.innerText = 'X';
         closeArea.onclick = function(){
             progressBar2.style.width = '0%';
-            percent.innerText = '0%'
+            percent.innerText = '0%\n';
             modal.style.display = 'none';
         }
         modalWindow.appendChild(closeArea);
@@ -118,11 +118,16 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
 
         var percent = document.createElement('div');
         percent.id = 'percent';
-        percent.innerText = '0%';
+        percent.innerText = '0%\n';
         
         modal.appendChild(modalWindow);
         modalWindow.appendChild(progressBar);
         modalWindow.appendChild(percent);
+
+        var pauseB = document.createElement('button');
+        pauseB.id = 'pauseB';
+        pauseB.innerText = '실행취소';
+        modalWindow.appendChild(pauseB);
 
         // 버튼영역
         var ButtonPlace = document.createElement('iframe');
@@ -209,7 +214,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
     }
 
     function bytesToSize(bytes) { // 파일크기 단위 변경
-        var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
         if (bytes == 0) return '0 Byte';
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
         return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
@@ -234,7 +239,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
             if(flag == 0){
                 add+=('>>> '+tempF.name+'\n');
                 LoadFile(where, tempF.name, calSize);
-                WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF});
+                WaitList.wl.push({'name':tempF.name, 'size':calSize, 'file':tempF, 'sizeN':tempF.size});
             }
         }
         same = '중복된 파일을 '+sameCount+same;
@@ -253,15 +258,18 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
             if(yesorno){
                 var place = document.getElementById('UploadPlace_'+id);
                 var modal = place.contentDocument.getElementById('modal');
+                var pauseB = place.contentDocument.getElementById('pauseB');
                 for(var w=0;w<WaitList.wl.length;w++){
                     formData.append('name'+w,WaitList.wl[w].name);
                     formData.append('size'+w,WaitList.wl[w].size);
+                    formData.append(WaitList.wl[w].name+' size',WaitList.wl[w].sizeN);
                     formData.append(WaitList.wl[w].name,WaitList.wl[w].file);
                 }
         
                 if(w!=0){
                     modal.style.display = 'flex';
                     modal.childNodes[0].childNodes[1].style.display ='none';
+                    modal.childNodes[0].childNodes[4].style.display ='flex';
                     req.open("POST", '/LSWUpDown/UploadServlet');
                     req.upload.onprogress = function(e){
                         if (e.lengthComputable) {
@@ -274,12 +282,26 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     }
                     req.send(formData);
                 }
+                pauseB.onclick = function(){
+                    if(req.readyState != XMLHttpRequest.DONE){
+                        req.abort();
+                        modal.childNodes[0].childNodes[3].innerText = "파일 업로드가 중단되었습니다.";
+                        modal.childNodes[0].childNodes[1].style.display ='flex';
+                        modal.childNodes[0].childNodes[4].style.display ='none';
+                    }
+                }
                 req.onreadystatechange = function(){
                     if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                         ListFiles(dn[0]);
                         ClearList(up[0],'','no');
-                        modal.childNodes[0].childNodes[3].innerText = "100.00%\n파일 업로드가 완료되었습니다.";
+                        modal.childNodes[0].childNodes[3].innerText = "파일 업로드가 완료되었습니다. 100.00%";
                         modal.childNodes[0].childNodes[1].style.display ='flex';
+                        modal.childNodes[0].childNodes[4].style.display ='none';
+                    }
+                    else if(req.status==500||req.status==404||req.status==403){
+                        modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.";
+                        modal.childNodes[0].childNodes[1].style.display ='flex';
+                        modal.childNodes[0].childNodes[4].style.display ='none';
                     }
                 }
             }
@@ -308,6 +330,9 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                     LoadFile(where, fileSplit[f], bytesToSize(fileSplit[f+1]));
                 }
             }
+            else if(req.status==500||req.status==404||req.status==403){
+                alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");
+            }
         }
     }
 
@@ -327,7 +352,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
             var yesorno = null;
             if(tag=='delete'){yesorno=confirm('체크된 항목을 삭제하시겠습니까?\n(※실제 서버에서 삭제됩니다.※)\n'+message);}
             else if(tag=='download'){yesorno=confirm('체크된 항목을 다운로드 하시겠습니까?\n'+message);}
-            else if(tag=='except'){yesorno=confirm('체크된 항목을 제외하시겠습니까?'+message);}
+            else if(tag=='except'){yesorno=confirm('체크된 항목을 제외하시겠습니까?\n'+message);}
 
             if(yesorno!=null&&yesorno){
                 if(tag=='except'){
@@ -342,11 +367,12 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                             }
                         }
                     }
-                    alert('체크된 항목을 제외하였습니다.'+message);
+                    alert('체크된 항목을 제외하였습니다.\n'+message);
                 }
                 else{
                     var place = document.getElementById('DownloadPlace_'+id);
                     var modal = place.contentDocument.getElementById('modal');
+                    var pauseB = place.contentDocument.getElementById('pauseB');
                     var req = new XMLHttpRequest();
                     var formData = new FormData();
             
@@ -360,6 +386,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                         req.responseType="blob";
                         if(w>1){modal.childNodes[0].childNodes[3].innerText = "파일을 압축중입니다...";}
                         modal.childNodes[0].childNodes[1].style.display ='none';
+                        modal.childNodes[0].childNodes[4].style.display ='flex';
                         modal.style.display = 'flex';
                         req.onprogress = function(e){
                             var percentComplete = e.loaded / e.total;
@@ -370,16 +397,32 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                         }
                         req.send(formData);
                     }
-
+                    pauseB.onclick = function(){
+                        if(req.readyState != XMLHttpRequest.DONE){
+                            req.abort();
+                            modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 중단되었습니다.";
+                            modal.childNodes[0].childNodes[1].style.display ='flex';
+                            modal.childNodes[0].childNodes[4].style.display ='none';
+                        }
+                    }
                     req.onreadystatechange = function(){
                         if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
                             ListFiles(dn[0]);
-                            if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.'+message);}
+                            if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.\n'+message);}
                             else if(tag=='download'){
-                                modal.childNodes[0].childNodes[3].innerText = "100.00%\n파일 다운로드가 완료되었습니다.";
+                                modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.00%";
                                 modal.childNodes[0].childNodes[1].style.display ='flex';
+                                modal.childNodes[0].childNodes[4].style.display ='none';
                                 DownloadFiles(req.response,controlList,w);
-                            }       
+                            }
+                        }
+                        else if(req.status==500||req.status==404||req.status==403){
+                            if(tag=='delete'){alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");}
+                            else if(tag=='download'){
+                                modal.childNodes[0].childNodes[3].innerText = "("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.";
+                                modal.childNodes[0].childNodes[1].style.display ='flex';
+                                modal.childNodes[0].childNodes[4].style.display ='none';
+                            }
                         }
                     }
                 }
@@ -412,8 +455,10 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                         if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
                             ListFiles(dn[0]);
                         }
+                        else if(req.status==500||req.status==404||req.status==403){
+                            alert("("+req.status+")오류가 발생하였습니다. 다시 시도해주세요.");
+                        }
                     }
-                    alert('전부 삭제하였습니다.');
                 }
             }
             else{
