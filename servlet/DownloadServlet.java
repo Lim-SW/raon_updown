@@ -38,11 +38,13 @@ public class DownloadServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
     	response.setContentType("text/html");
 		response.setCharacterEncoding("UTF-8");
+		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Expires", "0");
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    String s = String.valueOf(percentIp.get(ip));
 	    response.getWriter().write(s);
-	    //System.out.println(s);
     }
     
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
