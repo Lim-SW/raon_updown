@@ -33,10 +33,10 @@ public class DeleteServlet extends HttpServlet {
 		
 	    String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
+	    String log = "\n";
     	
     	File file = null;
-    	System.out.println();
-		System.out.println("======="+ip+"=======");
+    	log+="========="+ip+"=========\n";
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
@@ -44,9 +44,9 @@ public class DeleteServlet extends HttpServlet {
 			path += val;
 			file = new File(path);
 			file.delete();
-			System.out.println("<파일삭제> "+val);
+			log+="<파일삭제> "+val;
 		}
-    	System.out.println("=============================");
+    	log+="=================================";
 	}
 
 }

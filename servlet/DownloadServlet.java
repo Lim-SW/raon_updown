@@ -67,7 +67,7 @@ public class DownloadServlet extends HttpServlet {
     	//int sum = 0;
     	
 		System.out.println();
-		System.out.println("======="+ip+"=======");
+		System.out.println("========="+ip+"=========");
 		while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
@@ -78,7 +78,7 @@ public class DownloadServlet extends HttpServlet {
 			//sum+=(int)file.length()+1;
 			System.out.println("<다운로드> "+val);
 		}
-		System.out.println("=============================");
+		System.out.println("=================================");
 		
 		if(files.size()>1) {
 			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
@@ -106,7 +106,7 @@ public class DownloadServlet extends HttpServlet {
 	                        if (bytesBuffered > 1024 * 1024 * 25) {
 	                            bytesBuffered = 0;
 	                            out.flush();
-	                            percent = Math.round(progressD/whole*10000)/100.00;
+	                            //percent = Math.round(progressD/whole*10000)/100.00;
 	                            //s = String.valueOf(percent);
 	                            //System.out.println(percent);
 	                        }
@@ -151,7 +151,7 @@ public class DownloadServlet extends HttpServlet {
 			}
 			response.setContentType(mimeType);
 			String fileName = val;
-			String sEncoding = new String(fileName.getBytes("euc-kr"),"8859_1");
+			String sEncoding = new String(fileName.getBytes("UTF-8"));
 		    String value = "attachment;filename=\""+sEncoding+"\"";
 		    response.setHeader("Content-Disposition", value);
 		    response.setContentLengthLong(file.length());
