@@ -49,6 +49,7 @@ public class CheckServlet extends HttpServlet {
 		
 		String param = "name";
 		int i = 0;
+		boolean flag = false;
 		
 		while(request.getPart(param+i)!=null) {
 			InputStream is = request.getPart(param+i).getInputStream();
@@ -68,12 +69,13 @@ public class CheckServlet extends HttpServlet {
 					log+="<덜올림> "+fileName+" => ("+checkFile.length()+"/"+fileSize+")\n";
 					log+="└> "+percent+"%\n";
 					response.getWriter().write(fileName+"/"+percent+"/");
+					flag = true;
 				}
 			}
 	        i++;
 		}
 		log+="=================================";
 		
-		System.out.println(log);
+		if(flag) {System.out.println(log);}
 	}
 }

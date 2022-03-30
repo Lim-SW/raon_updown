@@ -107,15 +107,13 @@ public class UploadServlet extends HttpServlet {
 		//////////////////////////// COS ///////////////////////////
 		int size = (1024 * 1024 * 2048)-1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
-		
 		Enumeration fileNames = multi.getFileNames();
-		System.out.println();
-		System.out.println("========="+ip+"=========");
+		log+="========="+ip+"=========\n";
 		String val = "";
 		String fileSize = "";
 		while(fileNames.hasMoreElements()) {
 			val = (String) fileNames.nextElement();
-			System.out.println("<업로드> "+val);
+			log+="<업로드> "+val+"\n";
 			fileSize = multi.getParameter(val+" size");
 			Long longSize = Long.parseLong(fileSize);
 			File checkFile = new File(path+"\\"+val);
@@ -134,16 +132,17 @@ public class UploadServlet extends HttpServlet {
 						nf = new File(realPath+"\\"+newName);
 						i++;
 					}
-					if(newName!="") {System.out.println("└><중복된 파일명 변경> "+newName);}
+					if(newName!="") {log+="└><중복된 파일명 변경> "+newName+"\n";}
 					Files.move(oldfile, newfile, StandardCopyOption.ATOMIC_MOVE);
 					checkFile.delete();
 				}
 			}
 			else { // notExist
-				System.out.println("fileNotFound");
+				log+="fileNotFound\n";
 			}
 		}
-		System.out.println("=================================");
+		log+="=================================";
+		System.out.println(log);
 		////////////////////////////////////////////////////////////
 		
 	}
