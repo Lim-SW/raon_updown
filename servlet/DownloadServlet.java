@@ -56,6 +56,7 @@ public class DownloadServlet extends HttpServlet {
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    percentIp.put(ip,0);
+	    String log = "\n";
 		
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
@@ -66,8 +67,7 @@ public class DownloadServlet extends HttpServlet {
     	
     	//int sum = 0;
     	
-		System.out.println();
-		System.out.println("========="+ip+"=========");
+    	log+="========="+ip+"=========\n";
 		while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
@@ -76,9 +76,9 @@ public class DownloadServlet extends HttpServlet {
 			file = new File(path);
 			files.add(file);
 			//sum+=(int)file.length()+1;
-			System.out.println("<다운로드> "+val);
+			log+="<다운로드> "+val+"\n";
 		}
-		System.out.println("=================================");
+		log+="=================================";
 		
 		if(files.size()>1) {
 			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
@@ -170,6 +170,7 @@ public class DownloadServlet extends HttpServlet {
 		    in.close();
 		    out.close();
 		}
+		System.out.println(log);
 	}
 
 }

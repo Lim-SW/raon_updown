@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.oreilly.servlet.MultipartRequest;
-import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 
 /**
  * Servlet implementation class DeleteServlet
@@ -44,9 +43,10 @@ public class DeleteServlet extends HttpServlet {
 			path += val;
 			file = new File(path);
 			file.delete();
-			log+="<파일삭제> "+val;
+			log+="<파일삭제> "+val+"\n";
 		}
     	log+="=================================";
+    	System.out.println(log);
 	}
 
 }
