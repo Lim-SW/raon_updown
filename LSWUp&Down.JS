@@ -528,7 +528,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         modal.childNodes[0].childNodes[5].style.display ='flex';
         modal.childNodes[0].childNodes[6].style.display ='flex';
         modal.style.display = 'flex';
-        where.parentNode.scrollTo(0,0);
+        if(WaitList.IsIE){where.parentNode.scrollTop = 0;}
+        else{where.parentNode.scrollTo(0,0);}
     }
 
     function ModalOn(modal,where){ // 켜는모달
@@ -537,7 +538,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         modal.childNodes[0].childNodes[5].style.display ='none';
         modal.childNodes[0].childNodes[6].style.display ='none';
         modal.style.display = 'flex';
-        where.parentNode.scrollTo(0,0);
+        if(WaitList.IsIE){where.parentNode.scrollTop = 0;}
+        else{where.parentNode.scrollTo(0,0);}
     }
 
     function ModalOff(modal,message,where){ // 끄는모달
@@ -546,7 +548,8 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         modal.childNodes[0].childNodes[4].style.display ='none';
         modal.childNodes[0].childNodes[5].style.display ='none';
         modal.childNodes[0].childNodes[6].style.display ='none';
-        where.parentNode.scrollTo(0,0);
+        if(WaitList.IsIE){where.parentNode.scrollTop = 0;}
+        else{where.parentNode.scrollTo(0,0);}
     }
 
     function UploadFunc(modal,formData,pauseB){
