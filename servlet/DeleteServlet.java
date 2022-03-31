@@ -27,7 +27,7 @@ public class DeleteServlet extends HttpServlet {
 		String path = "D:\\LSWUpload\\Uploaded\\";
 		String val = "";
     	int size = (1024 * 1024 * 2000) + 1;
-		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8", new DefaultFileRenamePolicy());
+		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
     	Enumeration fileNames = multi.getParameterNames();
 		
 	    String ip = request.getHeader("X-Forwarded-For");

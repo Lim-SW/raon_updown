@@ -52,7 +52,7 @@ public class DownloadServlet extends HttpServlet {
 		String val = "";
 		int size = (1024 * 1024 * 2000) + 1;
 		LocalDateTime now = LocalDateTime.now();
-		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
+		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd. HH_mm_ss"));
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    percentIp.put(ip,0);

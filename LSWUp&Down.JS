@@ -1,7 +1,10 @@
-function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함수
+function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     LSWUpDownFileWaitList.prototype.wl = []; // 프로토타입으로 파일 오브젝트 보관
     LSWUpDownFileWaitList.prototype.IsIE = IsIE();
     var WaitList = new LSWUpDownFileWaitList();
+
+    var width = '400';
+    var height = '300';
 
     var up = LoadUI('Upload'); // 업로드 영역 UI 생성
     var dn = LoadUI('Download'); // 다운로드 영역 UI 생성
@@ -124,23 +127,10 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         modalWindow.appendChild(progressBar);
         modalWindow.appendChild(percent);
 
-        var pauseB = document.createElement('button');
-        pauseB.id = 'pauseB';
-        pauseB.innerText = '실행취소';
-        pauseB.style.display = 'none';
-        modalWindow.appendChild(pauseB);
-
-        var no = document.createElement('button');
-        no.id = 'no';
-        no.innerText = '아니오';
-        no.style.display = 'none';
-        modalWindow.appendChild(no);
-
-        var yes = document.createElement('button');
-        yes.id = 'yes';
-        yes.innerText = '예';
-        yes.style.display = 'none';
-        modalWindow.appendChild(yes);
+        // 모달 버튼
+        CreateModalButton(modalWindow,'pauseB','실행취소');
+        CreateModalButton(modalWindow,'no','아니오');
+        CreateModalButton(modalWindow,'yes','예');
 
         // 버튼영역
         var ButtonPlace = document.createElement('iframe');
@@ -226,7 +216,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         return fileInput;
     }
 
-    function bytesToSize(bytes) { // 파일크기 단위 변경
+    function BytesToSize(bytes) { // 파일크기 단위 변경
         var sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
         if (bytes == 0) return '0 Byte';
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
@@ -239,7 +229,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         var sameCount = 0;
         for(var f=0;f<th.files.length;f++){
             var tempF = th.files[f];
-            var calSize = bytesToSize(tempF.size);
+            var calSize = BytesToSize(tempF.size);
             var flag = 0;
             for(var u=0;u<where.childNodes.length;u++){
                 if(where.childNodes[u].childNodes[1].innerText == tempF.name && where.childNodes[u].childNodes[2].innerText == calSize){
@@ -336,7 +326,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                 var fileSplit = req.responseText.split('/');
                 fileSplit.pop();
                 for(var f=0;f<fileSplit.length;f+=2){
-                    LoadFile(where, fileSplit[f], bytesToSize(fileSplit[f+1]));
+                    LoadFile(where, fileSplit[f], BytesToSize(fileSplit[f+1]));
                 }
             }
             else if(req.status==500||req.status==404||req.status==403){
@@ -423,6 +413,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                                 clearInterval(intv);
                                 DownloadFiles(req.response,controlList,w);
                                 ModalOff(modal,"파일 다운로드가 완료되었습니다. 100.0%",up[0]);
+                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
                             }
                         }
                         else if(req.status==500||req.status==404||req.status==403){
@@ -493,6 +484,12 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
             var today = new Date();
             fn += today.toLocaleString();
             fn+=".zip";
+            if(WaitList.IsIE){fn = encodeURI(fn);}
+            else{
+                fn = fn.replace('.','년');
+                fn = fn.replace('.','월');
+                fn = fn.replace('.','일');
+            }
         }
         var blob = response;
         var element = document.createElement('a');
@@ -504,7 +501,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         document.body.removeChild(element);
     }
 
-    function Percent(modal,intv){
+    function Percent(modal,intv){ // 진행률 request 함수 interval로 사용
         var req2 = new XMLHttpRequest();
         req2.open('GET','/LSWUpDown/DownloadServlet');
         var percent = 0;
@@ -519,6 +516,14 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
                 }
             }
         }
+    }
+
+    function CreateModalButton(modalWindow, id, innerText){ // modal에 필요한 버튼 생성
+        var modalButton = document.createElement('button');
+        modalButton.id = id;
+        modalButton.innerText = innerText;
+        modalButton.style.display = 'none';
+        modalWindow.appendChild(modalButton);
     }
 
     function ModalYesNo(modal,message,where){ // 컨펌모달
@@ -552,7 +557,7 @@ function LoadLSWUpDown(id, width, height, divName){// 업다운로더 생성 함
         else{where.parentNode.scrollTo(0,0);}
     }
 
-    function UploadFunc(modal,formData,pauseB){
+    function UploadFunc(modal,formData,pauseB){ // 업로드 리퀘스트 및 프로세스 함수화
         var req = new XMLHttpRequest();
         req.open("POST", '/LSWUpDown/UploadServlet');
         req.upload.onprogress = function(e){
