@@ -68,7 +68,7 @@ public class CheckServlet extends HttpServlet {
 				if(checkFile.length() != fileSize) {
 					log+="<덜올림> "+fileName+" => ("+checkFile.length()+"/"+fileSize+")\n";
 					log+="└> "+percent+"%\n";
-					response.getWriter().write(fileName+"/"+percent+"/");
+					response.getWriter().write(fileName+"/"+percent+"/"+checkFile.length()+"/");
 					flag = true;
 				}
 			}

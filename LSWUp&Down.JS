@@ -272,32 +272,69 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                 }
         
                 if(w!=0){
-                    ModalOn(modal,up[0]);
-                    var checkReq = new XMLHttpRequest();
-                    var flag = "";
-                    checkReq.open("POST", '/LSWUpDown/CheckServlet');
-                    checkReq.send(checkForm);
-                    checkReq.onreadystatechange = function(){ // 여기 순서 확인해바
-                        if(checkReq.readyState == XMLHttpRequest.DONE&&checkReq.status==200){
-                            //console.log(checkReq.responseText);
-                            if(checkReq.responseText!=""){
-                                var res = checkReq.responseText.split('/');
-                                var percent = '"'+res[0]+'" ☞ '+res[1]+"%";
-                                ModalYesNo(modal,"이어서 올리시겠습니까?\n"+percent,up[0]);
+                    if(w==1){
+                        var checkReq = new XMLHttpRequest();
+                        checkReq.open("POST", '/LSWUpDown/CheckServlet');
+                        checkReq.send(checkForm);
+                        checkReq.onreadystatechange = function(){
+                            if(checkReq.readyState == XMLHttpRequest.DONE&&checkReq.status==200){
+                                if(checkReq.responseText!=""){
+                                    var res = checkReq.responseText.split('/');
+                                    var percent = '"'+res[0]+'" ☞ '+res[1]+"%";
+                                    ModalYesNo(modal,"이어서 올리시겠습니까?\n"+percent,up[0]);
+    
+                                    modal.childNodes[0].childNodes[6].onclick = function(){
+                                        //이어올리기 해야됨
+                                        //2. 체크 한만큼 슬라이스
+                                        var start = res[2];
+                                        var chunk = WaitList.wl[0].file.slice(start, WaitList.wl[0].sizeN);
+                                        //3. 슬라이스 한걸 다시 보냄 (다른 서블릿에 해야할듯)
+                                        var resume = new XMLHttpRequest();
+                                        var resumeF = new FormData();
+                                        resumeF.append('name',WaitList.wl[0].name);
+                                        resumeF.append('chunk',chunk);
+                                        resumeF.append('size',WaitList.wl[0].sizeN);
+                                        ModalOn(modal,dn[0]);
+                                        resume.open('POST','/LSWUpDown/ResumeServlet');
+                                        resume.upload.onprogress = function(e){
+                                            var percentComplete = (e.loaded+Number(start)) / WaitList.wl[0].sizeN;
+                                            percentComplete *= 100;
+                                            percentComplete = percentComplete.toFixed(2);
+                                            modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
+                                            modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
+                                        }
+                                        resume.send(resumeF);
+                                        pauseB.onclick = function(){
+                                            if(resume.readyState != XMLHttpRequest.DONE){
+                                                resume.abort();
+                                                ModalOff(modal,"파일 업로드가 중단되었습니다.",up[0]);
+                                            }
+                                        }
+                                        resume.onreadystatechange = function(){
+                                            if (resume.readyState == XMLHttpRequest.DONE&&resume.status==200){
+                                                ListFiles(dn[0]);
+                                                ClearList(up[0],'','no',modal);
+                                                ModalOff(modal,"파일 업로드가 완료되었습니다. 100.0%",up[0]);
+                                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
+                                            }
+                                            else if(resume.status==500||resume.status==404||resume.status==403){
+                                                ModalOff(modal,"("+resume.status+")오류가 발생하였습니다.",up[0]);
+                                            }
+                                        }
+                                    }
 
-                                modal.childNodes[0].childNodes[6].onclick = function(){
-                                    //flag = 'yes';
+                                    modal.childNodes[0].childNodes[5].onclick = function(){
+                                        UploadFunc(modal,formData,pauseB);
+                                    }
                                 }
-                                modal.childNodes[0].childNodes[5].onclick = function(){
-                                    ModalOn(modal,up[0]);
+                                else{
                                     UploadFunc(modal,formData,pauseB);
                                 }
                             }
-                            else{
-                                ModalOn(modal,up[0]);
-                                UploadFunc(modal,formData,pauseB);
-                            }
                         }
+                    }
+                    else{
+                        UploadFunc(modal,formData,pauseB);
                     }
                 }
             }
@@ -558,6 +595,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     }
 
     function UploadFunc(modal,formData,pauseB){ // 업로드 리퀘스트 및 프로세스 함수화
+        ModalOn(modal,up[0]);
         var req = new XMLHttpRequest();
         req.open("POST", '/LSWUpDown/UploadServlet');
         req.upload.onprogress = function(e){

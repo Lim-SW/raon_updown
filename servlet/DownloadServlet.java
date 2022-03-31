@@ -64,9 +64,7 @@ public class DownloadServlet extends HttpServlet {
 		
     	File file = null;
     	List<File> files = new ArrayList<>();
-    	
-    	//int sum = 0;
-    	
+
     	log+="========="+ip+"=========\n";
 		while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
@@ -106,9 +104,6 @@ public class DownloadServlet extends HttpServlet {
 	                        if (bytesBuffered > 1024 * 1024 * 25) {
 	                            bytesBuffered = 0;
 	                            out.flush();
-	                            //percent = Math.round(progressD/whole*10000)/100.00;
-	                            //s = String.valueOf(percent);
-	                            //System.out.println(percent);
 	                        }
 	                    }
 	                    b = new byte[10000];
