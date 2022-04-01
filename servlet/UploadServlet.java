@@ -40,7 +40,6 @@ public class UploadServlet extends HttpServlet {
     
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    
@@ -60,11 +59,10 @@ public class UploadServlet extends HttpServlet {
 
 		
 		// 이어올리기는 전에 체크 해야된다.
-
 		/*
 		//////////////////////// Part&Write ////////////////////////
 		log+="========="+ip+"=========\n";
-		Collection<Part> parts = request.getParts();
+		Collection<Part> parts = request.getParts(); //여기부터 안됨
 		for (Part part : parts) {
 			if(part.getContentType()!=null) {
 				String fileName = part.getName();
@@ -103,7 +101,7 @@ public class UploadServlet extends HttpServlet {
 		System.out.println(log);
 		////////////////////////////////////////////////////////////
 		*/
-	
+		
 		//////////////////////////// COS ///////////////////////////
 		int size = (1024 * 1024 * 2048)-1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");

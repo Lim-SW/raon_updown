@@ -40,7 +40,6 @@ public class ResumeServlet extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// 여기에서 파일 합치면 됨
-		
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    String log = "\n";
@@ -56,7 +55,7 @@ public class ResumeServlet extends HttpServlet {
 		Stream<String> streamOfString= new BufferedReader(fnir).lines();
         String fileName = streamOfString.collect(Collectors.joining());
         log+="<이어올리기> "+fileName+"\n";
-        
+
         InputStream fs = request.getPart("size").getInputStream();
         InputStreamReader inputStreamReader = new InputStreamReader(fs);
         Stream<String> sfs= new BufferedReader(inputStreamReader).lines();

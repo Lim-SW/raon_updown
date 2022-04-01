@@ -31,6 +31,8 @@ public class CheckServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
+		response.setContentType("text/html");
+		response.setCharacterEncoding("UTF-8");
 	    
 		String path = "D:\\LSWUpload\\"+ip;
 		File folder = new File(path);
@@ -48,31 +50,26 @@ public class CheckServlet extends HttpServlet {
 		log+="========="+ip+"=========\n";
 		
 		String param = "name";
-		int i = 0;
 		boolean flag = false;
-		
-		while(request.getPart(param+i)!=null) {
-			InputStream is = request.getPart(param+i).getInputStream();
-			InputStreamReader inputStreamReader = new InputStreamReader(is);
-	        Stream<String> streamOfString= new BufferedReader(inputStreamReader).lines();
-	        String fileName = streamOfString.collect(Collectors.joining());
+		InputStream is = request.getPart(param).getInputStream();
+		InputStreamReader inputStreamReader = new InputStreamReader(is);
+	    Stream<String> streamOfString= new BufferedReader(inputStreamReader).lines();
+	    String fileName = streamOfString.collect(Collectors.joining());
 	        
-	        is = request.getPart(fileName).getInputStream();
-	        inputStreamReader = new InputStreamReader(is);
-	        streamOfString= new BufferedReader(inputStreamReader).lines();
-	        long fileSize = Long.parseLong(streamOfString.collect(Collectors.joining()));
+	    is = request.getPart(fileName).getInputStream();
+	    inputStreamReader = new InputStreamReader(is);
+	    streamOfString= new BufferedReader(inputStreamReader).lines();
+	    long fileSize = Long.parseLong(streamOfString.collect(Collectors.joining()));
 	        
-			File checkFile = new File(path+"\\"+fileName);
-			double percent = Math.round((double)checkFile.length()/(double)fileSize*10000)/100.00;
-			if(checkFile.exists()) {
-				if(checkFile.length() != fileSize) {
-					log+="<덜올림> "+fileName+" => ("+checkFile.length()+"/"+fileSize+")\n";
-					log+="└> "+percent+"%\n";
-					response.getWriter().write(fileName+"/"+percent+"/"+checkFile.length()+"/");
-					flag = true;
-				}
+	    File checkFile = new File(path+"\\"+fileName);
+	    double percent = Math.round((double)checkFile.length()/(double)fileSize*10000)/100.00;
+	    if(checkFile.exists()) {
+			if(checkFile.length() != fileSize) {
+				log+="<덜올림> "+fileName+" => ("+checkFile.length()+"/"+fileSize+")\n";
+				log+="└> "+percent+"%\n";
+				response.getWriter().write(fileName+"/"+percent+"/"+checkFile.length()+"/");
+				flag = true;
 			}
-	        i++;
 		}
 		log+="=================================";
 		
