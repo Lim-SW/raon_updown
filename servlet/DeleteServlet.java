@@ -1,6 +1,8 @@
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
 
 import javax.servlet.ServletException;
@@ -29,6 +31,8 @@ public class DeleteServlet extends HttpServlet {
     	int size = (1024 * 1024 * 2000) + 1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
     	Enumeration fileNames = multi.getParameterNames();
+    	LocalDateTime now = LocalDateTime.now();
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
 		
 	    String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
@@ -36,6 +40,7 @@ public class DeleteServlet extends HttpServlet {
     	
     	File file = null;
     	log+="========="+ip+"=========\n";
+    	log+=formdatenow+"\n";
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();

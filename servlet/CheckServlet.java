@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +35,9 @@ public class CheckServlet extends HttpServlet {
 	    if (ip == null) ip = request.getRemoteAddr();
 		response.setContentType("text/html");
 		response.setCharacterEncoding("UTF-8");
-	    
+		LocalDateTime now = LocalDateTime.now();
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		
 		String path = "D:\\LSWUpload\\"+ip;
 		File folder = new File(path);
 		String log = "\n";
@@ -48,7 +52,7 @@ public class CheckServlet extends HttpServlet {
 		}
 
 		log+="========="+ip+"=========\n";
-		
+		log+=formdatenow+"\n";
 		String param = "name";
 		boolean flag = false;
 		InputStream is = request.getPart(param).getInputStream();

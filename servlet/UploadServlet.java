@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,6 +45,9 @@ public class UploadServlet extends HttpServlet {
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    
+	    LocalDateTime now = LocalDateTime.now();
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		
 		String path = "D:\\LSWUpload\\"+ip;
 		String realPath = "D:\\LSWUpload\\Uploaded";
 		File folder = new File(path);
@@ -62,6 +67,7 @@ public class UploadServlet extends HttpServlet {
 		/*
 		//////////////////////// Part&Write ////////////////////////
 		log+="========="+ip+"=========\n";
+		log+=formdatenow+"\n";
 		Collection<Part> parts = request.getParts(); //여기부터 안됨
 		for (Part part : parts) {
 			if(part.getContentType()!=null) {
@@ -107,6 +113,7 @@ public class UploadServlet extends HttpServlet {
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		Enumeration fileNames = multi.getFileNames();
 		log+="========="+ip+"=========\n";
+		log+=formdatenow+"\n";
 		String val = "";
 		String fileSize = "";
 		while(fileNames.hasMoreElements()) {

@@ -486,7 +486,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                 percent = req2.responseText;
                 if(isZip==true){modal.childNodes[0].childNodes[3].innerText = "서버에서 파일을 압축중입니다. "+percent+"%";}
                 else{modal.childNodes[0].childNodes[3].innerText = percent+"%";}
-                if(percent==100.0){modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.0%";ListFiles(dn[0]);}
+                if(percent==100.0){modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.0%";}
                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = percent+"%";
             }
         }
@@ -590,7 +590,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
                                 WaitList.wl.shift();
                                 if(WaitList.wl.length!=0){
-                                    SendWaitList('again');
+                                    SendWaitList('again'); // 이거는 쪼갠거 다 올라가면 다음파일
                                 }
                                 else{
                                     ModalOff(modal,"파일 업로드가 완료되었습니다. 100.0%",up[0]);
@@ -613,6 +613,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     }
 
     function UploadFunc(modal,formData,pauseB){ // 업로드 리퀘스트 및 프로세스 함수화
+        // 여기서 쪼개서 올려여함
         ModalOn(modal,up[0]);
         var filename = WaitList.wl[0].name;
         if (filename.length>12){filename = filename.substring(0,12)+"....";}
