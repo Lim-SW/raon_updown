@@ -126,9 +126,7 @@ public class DownloadServlet extends HttpServlet {
 			
 			FileInputStream in2 = new FileInputStream(zip);
 			String mimeType = getServletContext().getMimeType(zip.toString());
-			if(mimeType == null) {
-				mimeType = "application/octet-stream";
-			}
+			mimeType = "application/octet-stream";
 			response.setContentType(mimeType);
 	        String sEncoding = new String(zip.getName().getBytes("euc-kr"),"8859_1");
 	        String value = "attachment;filename=\""+sEncoding+"\"";
@@ -152,9 +150,7 @@ public class DownloadServlet extends HttpServlet {
 			byte[] b = new byte[10000];
 			FileInputStream in = new FileInputStream(file);
 			String mimeType = getServletContext().getMimeType(file.toString());
-			if(mimeType == null) {
-				mimeType = "application/octet-stream";
-			}
+			mimeType = "application/octet-stream";
 			response.setContentType(mimeType);
 			String fileName = val;
 			String sEncoding = new String(fileName.getBytes("euc-kr"),"8859_1");
