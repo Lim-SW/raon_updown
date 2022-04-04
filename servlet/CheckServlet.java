@@ -36,7 +36,7 @@ public class CheckServlet extends HttpServlet {
 		response.setContentType("text/html");
 		response.setCharacterEncoding("UTF-8");
 		LocalDateTime now = LocalDateTime.now();
-		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 		
 		String path = "D:\\LSWUpload\\"+ip;
 		File folder = new File(path);

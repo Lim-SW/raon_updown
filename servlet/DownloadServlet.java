@@ -54,7 +54,7 @@ public class DownloadServlet extends HttpServlet {
 		String val = "";
 		int size = (1024 * 1024 * 2000) + 1;
 		LocalDateTime now = LocalDateTime.now();
-		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    
@@ -72,7 +72,7 @@ public class DownloadServlet extends HttpServlet {
 		double percent = 0;
     	
     	log+="========="+ip+"=========\n";
-    	log+=formdatenow+"\n";
+    	log+="==="+formdatenow+"==\n";
 		while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();

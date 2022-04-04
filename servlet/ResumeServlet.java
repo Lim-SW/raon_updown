@@ -46,10 +46,10 @@ public class ResumeServlet extends HttpServlet {
 	    if (ip == null) ip = request.getRemoteAddr();
 	    String log = "\n";
 	    LocalDateTime now = LocalDateTime.now();
-		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 	    
 	    log+="========="+ip+"=========\n";
-	    log+=formdatenow+"\n";
+	    log+="==="+formdatenow+"==\n";
 		String path = "D:\\LSWUpload\\"+ip;
 		String realPath = "D:\\LSWUpload\\Uploaded";
 		

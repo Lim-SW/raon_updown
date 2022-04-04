@@ -32,7 +32,7 @@ public class DeleteServlet extends HttpServlet {
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
     	Enumeration fileNames = multi.getParameterNames();
     	LocalDateTime now = LocalDateTime.now();
-		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 d일 HH시mm분ss초"));
+		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 		
 	    String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
@@ -40,7 +40,7 @@ public class DeleteServlet extends HttpServlet {
     	
     	File file = null;
     	log+="========="+ip+"=========\n";
-    	log+=formdatenow+"\n";
+    	log+="==="+formdatenow+"==\n";
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
