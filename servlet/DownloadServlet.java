@@ -43,7 +43,9 @@ public class DownloadServlet extends HttpServlet {
 		response.setHeader("Expires", "0");
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
-	    String s = String.valueOf(percentIp.get(ip));
+	    String randomnumber = request.getParameter("num");
+		//System.out.println(randomnumber);
+	    String s = String.valueOf(percentIp.get(ip+","+randomnumber));
 	    response.getWriter().write(s);
     }
     
@@ -52,10 +54,10 @@ public class DownloadServlet extends HttpServlet {
 		String val = "";
 		int size = (1024 * 1024 * 2000) + 1;
 		LocalDateTime now = LocalDateTime.now();
-		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd. HH_mm_ss"));
+		String formatedNow = now.format(DateTimeFormatter.ofPattern("yyyy년MM월dd일 HH시mm분ss초"));
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
-	    percentIp.put(ip,0);
+	    
 	    String log = "\n";
 		
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
@@ -64,28 +66,34 @@ public class DownloadServlet extends HttpServlet {
 		
     	File file = null;
     	List<File> files = new ArrayList<>();
-
+    	String randomnumber = "";
+		double progressD = 0;
+		double whole = 0;
+		double percent = 0;
+    	
     	log+="========="+ip+"=========\n";
 		while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
 			val = multi.getParameter(val);
-			path += val;
-			file = new File(path);
-			files.add(file);
-			//sum+=(int)file.length()+1;
-			log+="<다운로드> "+val+"\n";
+			if(val.contains(".")) {
+				path += val;
+				file = new File(path);
+				files.add(file);
+				log+="<다운로드> "+val+"\n";
+			}
+			else {
+				randomnumber = val;
+				percentIp.put(ip+","+randomnumber,0);
+			}
 		}
 		log+="=================================";
 		
 		if(files.size()>1) {
-			File zip = new File("D:\\LSWUpload\\"+ip+", "+formatedNow+".zip");
+			File zip = new File("D:\\LSWUpload\\LSWUp&Down_"+ip+", "+formatedNow+".zip");
 			//System.out.println(zip);
 			byte[] b =new byte[10000];
-			double progressD = 0;
-			double whole = 0;
 			for (File f : files) {whole += f.length();}
-			double percent = 0;
 			//String s = "";
 	        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
 	            for (File f : files) {
@@ -100,7 +108,7 @@ public class DownloadServlet extends HttpServlet {
 	                        out.write(b, 0, len);
 	                        bytesBuffered += len;
 	                        percent = Math.round(progressD/whole*10000)/100.00;
-	                        percentIp.put(ip,percent);
+	                        percentIp.put(ip+","+randomnumber,percent);
 	                        if (bytesBuffered > 1024 * 1024 * 25) {
 	                            bytesBuffered = 0;
 	                            out.flush();
@@ -111,7 +119,7 @@ public class DownloadServlet extends HttpServlet {
 	                }
 	            }
 	            percent = 100.00;
-	            percentIp.put(ip,percent);
+	            percentIp.put(ip+","+randomnumber,percent);
 	            //System.out.println(percent);
 	        }
 			
@@ -121,10 +129,11 @@ public class DownloadServlet extends HttpServlet {
 				mimeType = "application/octet-stream";
 			}
 			response.setContentType(mimeType);
-	        String sEncoding = new String(zip.getName().getBytes("UTF-8"));
+	        String sEncoding = new String(zip.getName().getBytes("euc-kr"),"8859_1");
 	        String value = "attachment;filename=\""+sEncoding+"\"";
 	        response.setHeader("Content-Disposition", value);
-	        response.setContentLengthLong(zip.length());
+	        //response.setContentLengthLong(zip.length());
+	        
 	        ServletOutputStream out2 = response.getOutputStream();
 	        
 	        int read;
@@ -138,6 +147,7 @@ public class DownloadServlet extends HttpServlet {
         }
 		
 		else {
+			whole = file.length();
 			byte[] b = new byte[10000];
 			FileInputStream in = new FileInputStream(file);
 			String mimeType = getServletContext().getMimeType(file.toString());
@@ -146,22 +156,28 @@ public class DownloadServlet extends HttpServlet {
 			}
 			response.setContentType(mimeType);
 			String fileName = val;
-			String sEncoding = new String(fileName.getBytes("UTF-8"));
+			String sEncoding = new String(fileName.getBytes("euc-kr"),"8859_1");
 		    String value = "attachment;filename=\""+sEncoding+"\"";
 		    response.setHeader("Content-Disposition", value);
-		    response.setContentLengthLong(file.length());
+		    //response.setContentLengthLong(file.length());
+		    
 		    ServletOutputStream out = response.getOutputStream();
-		        
+		    
 		    int read = 0;
             int bytesBuffered = 0;
 		    while((read = in.read(b,0,b.length))!= -1){
+		    	progressD += read;
 		     	out.write(b,0,read);
                 bytesBuffered += read;
+                percent = Math.round(progressD/whole*10000)/100.00;
+                percentIp.put(ip+","+randomnumber,percent);
                 if (bytesBuffered > 1024 * 1024 * 25) {
                     bytesBuffered = 0;
                     out.flush();
                 }
 		    }
+            percent = 100.00;
+            percentIp.put(ip+","+randomnumber,percent);
 		    in.close();
 		    out.close();
 		}

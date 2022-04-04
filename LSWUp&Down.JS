@@ -24,8 +24,8 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     deleteFile.onclick = function(){ControlFile(dn[0],'delete')}
     var clearFiles = AddB(dn[1],'button','clearFiles','전부삭제');
     clearFiles.onclick = function(){ClearList(dn[0],'삭제','',dn[2]);}
-    var startDownload = AddB(dn[1],'button','startDownload','다운로드시작');
-    startDownload.onclick = function(){ControlFile(dn[0],'download')}
+    var startDownload = AddB(dn[1],'form','startDownload','다운로드시작');
+    startDownload[1].onclick = function(){ControlFile(dn[0],'download')}
 
     // 여기부터 LoadLSWUpDown 에서만 사용할 함수들
     function LSWUpDownFileWaitList() {// 파일 오브젝트 프로토타입용 함수
@@ -201,8 +201,16 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     function AddB(where, buttonType, buttonId, buttonText){ // UI에 버튼추가
         var inputDiv = document.createElement('div');
         inputDiv.className = 'inputdiv';
-        var fileInput = document.createElement('input');
-        fileInput.type = buttonType;
+        if(buttonType=='form'){
+            var fileInput = document.createElement('form');
+            fileInput.acceptCharset = "UTF-8";
+            fileInput.method = 'post';
+            fileInput.action = '/LSWUpDown/DownloadServlet';
+            fileInput.target = '_self';
+            fileInput.enctype = 'multipart/form-data'
+        }
+        else{var fileInput = document.createElement('input');
+        fileInput.type = buttonType;}
         fileInput.id = buttonId;
         if(buttonType=='file'){fileInput.multiple = 'true';}
         var inputLabel = document.createElement('label');
@@ -212,6 +220,8 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         where.appendChild(inputDiv);
         inputDiv.appendChild(inputLabel);
         inputDiv.appendChild(fileInput);
+        if(buttonType=='form'){
+        return [fileInput,inputLabel]}
 
         return fileInput;
     }
@@ -305,12 +315,18 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         var flag = 0;
         var controlList = [];
         var message = '';
+
         for(var u=0;u<where.childNodes.length;u++){
             if(where.childNodes[u].childNodes[0].checked){
                 controlList.push(where.childNodes[u].childNodes[1].innerText);
                 message += '\n>>> '+where.childNodes[u].childNodes[1].innerText;
                 flag = 1;
             }
+        }
+
+        if(tag == 'download'){
+            var LSW_RANDOM_NUMBER = Math.floor(Math.random() * 1000000);
+            controlList.push(LSW_RANDOM_NUMBER);
         }
         
         if(flag==1){
@@ -343,26 +359,28 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
             
                     for(var w=0;w<controlList.length;w++){
                         formData.append('name'+w,controlList[w]);
+                        var temptemp = document.createElement('input');
+                        temptemp.type = 'hidden';
+                        temptemp.name = 'name'+w;
+                        temptemp.value = controlList[w];
+                        startDownload[0].appendChild(temptemp);
                         }
-
+                    
+                    
                     if(tag=='delete'){req.open('service','/LSWUpDown/DeleteServlet');req.send(formData);}
                     else if(tag=='download'){
-                        req.open('POST','/LSWUpDown/DownloadServlet');
-                        req.responseType="blob";
-                        //if(w>1){modal.childNodes[0].childNodes[3].innerText = "파일을 압축 후 다운로드 중입니다. ";}
-                        ModalOn(modal,dn[0]);
-
-                        req.onprogress = function(e){
-                            if(w<=1){
-                                var percentComplete = e.loaded / e.total;
-                                percentComplete *= 100;
-                                percentComplete = percentComplete.toFixed(2);
-                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = percentComplete+"%";
-                                modal.childNodes[0].childNodes[3].innerText = percentComplete+"%";
-                            }
-                        }
-                        req.send(formData);
-                        if(w>1){var intv = setInterval(Percent,500,modal,intv);}
+                        ModalOn(modal,dn[0],'down');
+                        startDownload[0].submit();
+                        var isZip = w>2;
+                        var intv = setInterval(function(){
+                            Percent(modal,isZip,LSW_RANDOM_NUMBER);
+                            if(modal.childNodes[0].childNodes[3].innerText=="파일 다운로드가 완료되었습니다. 100.0%"){
+                                clearInterval(intv);
+                                startDownload[0].innerHTML = "";
+                                ModalOff(modal,"파일 다운로드가 완료되었습니다. 100.0%",up[0]);
+                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
+                                ListFiles(dn[0]);
+                            }},500);
                     }
                     pauseB.onclick = function(){
                         if(req.readyState != XMLHttpRequest.DONE){
@@ -375,18 +393,9 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                         if (req.readyState == XMLHttpRequest.DONE&&req.status==200){
                             ListFiles(dn[0]);
                             if(tag=='delete'){alert('체크된 항목을 삭제하였습니다.\n'+message);}
-                            else if(tag=='download'){
-                                clearInterval(intv);
-                                DownloadFiles(req.response,controlList,w);
-                                ModalOff(modal,"파일 다운로드가 완료되었습니다. 100.0%",up[0]);
-                                modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
-                            }
                         }
                         else if(req.status==500||req.status==404||req.status==403){
-                            if(tag=='delete'){alert("("+req.status+")오류가 발생하였습니다.");}
-                            else if(tag=='download'){
-                                ModalOff(modal,"("+req.status+")오류가 발생하였습니다.",up[0]);
-                            }
+                            ModalOff(modal,"("+req.status+")오류가 발생하였습니다.",up[0]);
                         }
                     }
                 }
@@ -443,8 +452,8 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
             alert(str+'할 항목이 없습니다.');
         }
     }
-
-    function DownloadFiles(response,fn,isZip){ // response로 blob url 생성후 다운로드
+    
+    function DownloadFiles(response,fn,isZip){ // response로 blob url 생성후 다운로드 (※브라우저에서 메모리 많이씀)
         if(isZip>1){
             fn = "LSWUp&Down_"
             var today = new Date();
@@ -467,19 +476,18 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         document.body.removeChild(element);
     }
 
-    function Percent(modal,intv){ // 진행률 request 함수 interval로 사용
+    function Percent(modal,isZip,LSW_RANDOM_NUMBER){ // 진행률 request 함수 interval로 사용
         var req2 = new XMLHttpRequest();
-        req2.open('GET','/LSWUpDown/DownloadServlet');
+        req2.open('GET','/LSWUpDown/DownloadServlet?'+"num="+LSW_RANDOM_NUMBER);
         var percent = 0;
         req2.send();
         req2.onreadystatechange = function(){
             if (req2.readyState == XMLHttpRequest.DONE&&req2.status==200){
                 percent = req2.responseText;
-                modal.childNodes[0].childNodes[3].innerText = percent+"%";
+                if(isZip==true){modal.childNodes[0].childNodes[3].innerText = "서버에서 파일을 압축중입니다. "+percent+"%";}
+                else{modal.childNodes[0].childNodes[3].innerText = percent+"%";}
+                if(percent==100.0){modal.childNodes[0].childNodes[3].innerText = "파일 다운로드가 완료되었습니다. 100.0%";ListFiles(dn[0]);}
                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = percent+"%";
-                if(percent==100.0){
-                    clearInterval(intv);
-                }
             }
         }
     }
@@ -503,9 +511,10 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         else{where.parentNode.scrollTo(0,0);}
     }
 
-    function ModalOn(modal,where){ // 켜는모달
+    function ModalOn(modal,where,down){ // 켜는모달
         modal.childNodes[0].childNodes[1].style.display ='none';
-        modal.childNodes[0].childNodes[4].style.display ='flex';
+        if(down=='down'){modal.childNodes[0].childNodes[4].style.display ='none';}
+        else{modal.childNodes[0].childNodes[4].style.display ='flex';}
         modal.childNodes[0].childNodes[5].style.display ='none';
         modal.childNodes[0].childNodes[6].style.display ='none';
         modal.style.display = 'flex';
@@ -575,7 +584,8 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                         }
                         resume.onreadystatechange = function(){
                             if (resume.readyState == XMLHttpRequest.DONE&&resume.status==200){
-                                modal.parentElement.childNodes[1].childNodes[0].remove();
+                                if(WaitList.IsIE){var temp = modal.parentElement.childNodes[1].childNodes[0];temp.parentNode.removeChild(temp);}
+                                else{modal.parentElement.childNodes[1].childNodes[0].remove();}
                                 ListFiles(dn[0]);
                                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
                                 WaitList.wl.shift();
@@ -583,7 +593,6 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                                     SendWaitList('again');
                                 }
                                 else{
-                                    ClearList(up[0],'','no',modal);
                                     ModalOff(modal,"파일 업로드가 완료되었습니다. 100.0%",up[0]);
                                 }
                             }
@@ -621,7 +630,8 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         req.send(formData);
         req.onreadystatechange = function(){
             if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
-                modal.parentElement.childNodes[1].childNodes[0].remove();
+                if(WaitList.IsIE){var temp = modal.parentElement.childNodes[1].childNodes[0];temp.parentNode.removeChild(temp);}
+                else{modal.parentElement.childNodes[1].childNodes[0].remove();}
                 ListFiles(dn[0]);
                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
                 WaitList.wl.shift();
