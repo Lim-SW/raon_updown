@@ -114,7 +114,9 @@ public class UploadServlet extends HttpServlet {
 					    stream.close();
 					}
 					else { // notExist
-						part.write(path+"\\"+fileName);
+						if(part.getSize()!=0) {
+							part.write(path+"\\"+fileName);
+						}
 					}
 	
 					checkFile = new File(path+"\\"+fileName);
@@ -188,7 +190,7 @@ public class UploadServlet extends HttpServlet {
 			*/
 	    }catch(Exception e) {
 			log+="========="+ip+"=========\n";
-			log+="==="+formdatenow+".==\n";
+			log+="==="+formdatenow+"==\n";
 	    	log+="============<업로드 중단>===========\n";
 	    	log+="=================================";
 			System.out.println(log);

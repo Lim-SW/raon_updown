@@ -603,7 +603,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
         req.send(formData);
         req.onreadystatechange = function(){
             if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
-                if(offset+term!=fullsize){
+                if((offset+term!=fullsize)&&(offset+term<fullsize)){
                     offset +=term;
                     UploadFunc(modal,pauseB,offset,term);
                 }
