@@ -77,7 +77,7 @@ public class UploadServlet extends HttpServlet {
 	
 			//////////////////////// Part&Write ////////////////////////
 			log+="========="+ip+"=========\n";
-			log+="==="+formdatenow+".==\n";
+			log+="==="+formdatenow+"==\n";
 			Collection<Part> parts = request.getParts();
 			for (Part part : parts) {
 				if(part.getContentType()!=null) {

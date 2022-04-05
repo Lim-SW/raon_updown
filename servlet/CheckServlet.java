@@ -52,7 +52,7 @@ public class CheckServlet extends HttpServlet {
 		}
 
 		log+="========="+ip+"=========\n";
-		log+=formdatenow+"\n";
+		log+="==="+formdatenow+"==\n";
 		String param = "name";
 		boolean flag = false;
 		InputStream is = request.getPart(param).getInputStream();
