@@ -1,6 +1,9 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +16,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -64,50 +69,81 @@ public class UploadServlet extends HttpServlet {
 
 		
 		// 이어올리기는 전에 체크 해야된다.
-		/*
+		
+		InputStream yesno = request.getPart("yesno").getInputStream();
+		InputStreamReader yesnoReader = new InputStreamReader(yesno);
+		Stream<String> yesnoString= new BufferedReader(yesnoReader).lines();
+	    String yn = yesnoString.collect(Collectors.joining());
+
 		//////////////////////// Part&Write ////////////////////////
 		log+="========="+ip+"=========\n";
 		log+="==="+formdatenow+".==\n";
-		Collection<Part> parts = request.getParts(); //여기부터 안됨
+		Collection<Part> parts = request.getParts();
 		for (Part part : parts) {
 			if(part.getContentType()!=null) {
 				String fileName = part.getName();
-				long fileSize = part.getSize();
+				
+				InputStream fnis = request.getPart(fileName+" size").getInputStream();
+				InputStreamReader inputStreamReader = new InputStreamReader(fnis);
+				Stream<String> streamOfString= new BufferedReader(inputStreamReader).lines();
+			    long fileSize = Long.parseLong(streamOfString.collect(Collectors.joining()));
+				
 				//System.out.printf("파라미터 명 : %s, contentType :  %s,  size : %d bytes \n", part.getName(),part.getContentType(), part.getSize());
 				log+="<업로드> "+fileName+"\n";
-				part.write(path+"\\"+fileName);
 
 				File checkFile = new File(path+"\\"+fileName);
-				
+			    if(yn.equals("NO")&&checkFile.exists()) {
+			    	checkFile.delete();
+			    }
+			    
 				if(checkFile.exists()) {
-					if(checkFile.length() == fileSize) {
-						Path oldfile = Paths.get(path+"\\"+fileName);
-						Path newfile = Paths.get(realPath+"\\"+fileName);
-						File nf = new File(realPath+"\\"+fileName);
-						int i = 1;
-						String newName = "";
-						while(nf.exists()) {
-							int li = fileName.lastIndexOf(".");
-							newName = fileName.substring(0, li)+"("+i+")"+fileName.substring(li, fileName.length());
-							newfile = Paths.get(realPath+"\\"+newName);
-							nf = new File(realPath+"\\"+newName);
-							i++;
-						}
-						if(newName!="") {log+="└><중복된 파일명 변경> "+newName+"\n";}
-						Files.move(oldfile, newfile, StandardCopyOption.ATOMIC_MOVE);
-						checkFile.delete();
-					}
+					FileOutputStream stream = new FileOutputStream(path+"\\"+fileName, true);
+					InputStream is = part.getInputStream();
+			        int read;
+			        byte[] b =new byte[10000];
+			        int bytesBuffered = 0;
+			        while((read = is.read(b,0,b.length))!= -1){
+			        	stream.write(b,0,read);
+			            bytesBuffered += read;
+			            if (bytesBuffered > 1024 * 1024 * 25) {
+			                bytesBuffered = 0;
+			                stream.flush();
+			            }
+			        }
+			        
+				    is.close();
+				    stream.close();
 				}
 				else { // notExist
-					log+="fileNotFound"+"\n";
+					part.write(path+"\\"+fileName);
+				}
+				
+				checkFile = new File(path+"\\"+fileName);
+				
+				if(checkFile.length() == fileSize) {
+					Path oldfile = Paths.get(path+"\\"+fileName);
+					Path newfile = Paths.get(realPath+"\\"+fileName);
+					File nf = new File(realPath+"\\"+fileName);
+					int i = 1;
+					String newName = "";
+					while(nf.exists()) {
+						int li = fileName.lastIndexOf(".");
+						newName = fileName.substring(0, li)+"("+i+")"+fileName.substring(li, fileName.length());
+						newfile = Paths.get(realPath+"\\"+newName);
+						nf = new File(realPath+"\\"+newName);
+						i++;
+					}
+					if(newName!="") {log+="└><중복된 파일명 변경> "+newName+"\n";}
+					Files.move(oldfile, newfile, StandardCopyOption.ATOMIC_MOVE);
+					checkFile.delete();
+					log+="=================================";
+					System.out.println(log);
 				}
 			}
 		}
-		log+="=================================";
-		System.out.println(log);
 		////////////////////////////////////////////////////////////
-		*/
 		
+		/*
 		//////////////////////////// COS ///////////////////////////
 		int size = (1024 * 1024 * 2048)-1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
@@ -149,7 +185,7 @@ public class UploadServlet extends HttpServlet {
 		log+="=================================";
 		System.out.println(log);
 		////////////////////////////////////////////////////////////
-		
+		*/
 	}
 
 }

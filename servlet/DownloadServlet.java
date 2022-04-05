@@ -180,5 +180,4 @@ public class DownloadServlet extends HttpServlet {
 		}
 		System.out.println(log);
 	}
-
 }
