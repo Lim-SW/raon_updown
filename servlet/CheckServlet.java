@@ -69,8 +69,8 @@ public class CheckServlet extends HttpServlet {
 	    double percent = Math.round((double)checkFile.length()/(double)fileSize*10000)/100.00;
 	    if(checkFile.exists()) {
 			if(checkFile.length() != fileSize) {
-				log+="<덜올림> "+fileName+" => ("+checkFile.length()+"/"+fileSize+")\n";
-				log+="└> "+percent+"%\n";
+				log+="<덜올림> "+fileName+"\n";
+				log+="└> "+percent+"% => ("+checkFile.length()+"/"+fileSize+")\n";
 				response.getWriter().write(fileName+"/"+percent+"/"+checkFile.length()+"/");
 				flag = true;
 			}
