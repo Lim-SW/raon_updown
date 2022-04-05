@@ -535,12 +535,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
     function ResumeFunc(modal, pauseB){ // 이어올리기 기능
         var filename = WaitList.wl[0].name;
         if (filename.length>12){filename = filename.substring(0,12)+"....";}
-        var formData = new FormData();
         var checkForm = new FormData();
-        formData.append('name',WaitList.wl[0].name);
-        formData.append('size',WaitList.wl[0].size);
-        formData.append(WaitList.wl[0].name+' size',WaitList.wl[0].sizeN);
-        formData.append(WaitList.wl[0].name,WaitList.wl[0].file);
         checkForm.append('name',WaitList.wl[0].name);
         checkForm.append(WaitList.wl[0].name,WaitList.wl[0].sizeN);
     
@@ -556,20 +551,20 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
                     ModalYesNo(modal,"이어서 올리시겠습니까?\n"+percent,up[0]);
 
                     modal.childNodes[0].childNodes[6].onclick = function(){ // 예
-                        UploadFunc(modal,formData,pauseB,res[2],0,'YES');
+                        UploadFunc(modal,pauseB,res[2],0,'YES');
                     }
                     modal.childNodes[0].childNodes[5].onclick = function(){ // 아니오
-                        UploadFunc(modal,formData,pauseB,0,0,'NO');
+                        UploadFunc(modal,pauseB,0,0,'NO');
                     }
                 }
                 else{
-                    UploadFunc(modal,formData,pauseB,0,0,'NO');
+                    UploadFunc(modal,pauseB,0,0,'NO');
                 }
             }
         }
     }
 
-    function UploadFunc(modal,formData,pauseB,offset,term,yesno){ // 업로드 리퀘스트 및 프로세스 함수화
+    function UploadFunc(modal,pauseB,offset,term,yesno){ // 업로드 리퀘스트 및 프로세스 함수화
         offset = Number(offset);
         ModalOn(modal,up[0]);
         var filename = WaitList.wl[0].name; // formData.get('name');
@@ -610,7 +605,7 @@ function LoadLSWUpDown(id, divName){// 업다운로더 생성 함수
             if(req.readyState == XMLHttpRequest.DONE&&req.status==200){
                 if(offset+term!=fullsize){
                     offset +=term;
-                    UploadFunc(modal,formData,pauseB,offset,term);
+                    UploadFunc(modal,pauseB,offset,term);
                 }
                 else{
                     if(WaitList.IsIE){var temp = modal.parentElement.childNodes[1].childNodes[0];temp.parentNode.removeChild(temp);}
