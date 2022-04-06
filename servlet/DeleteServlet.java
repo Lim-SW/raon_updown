@@ -30,7 +30,7 @@ public class DeleteServlet extends HttpServlet {
 		String val = "";
     	int size = (1024 * 1024 * 2000) + 1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
-    	Enumeration fileNames = multi.getParameterNames();
+    	Enumeration<?> fileNames = multi.getParameterNames();
     	LocalDateTime now = LocalDateTime.now();
 		String formdatenow = now.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시 mm분 ss초"));
 		

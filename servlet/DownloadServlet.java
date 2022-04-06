@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -23,13 +22,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.oreilly.servlet.MultipartRequest;
-import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
-
 
 @WebServlet("/DownloadServlet")
 public class DownloadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    private static Map percentIp = new HashMap<>();
+    private static Map<Object, Object> percentIp = new HashMap<>();
        
     public DownloadServlet() {
         super();
@@ -62,7 +59,7 @@ public class DownloadServlet extends HttpServlet {
 		
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
 		
-		Enumeration fileNames = multi.getParameterNames();
+		Enumeration<?> fileNames = multi.getParameterNames();
 		
     	File file = null;
     	List<File> files = new ArrayList<>();
