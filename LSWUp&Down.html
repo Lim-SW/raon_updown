@@ -11,7 +11,47 @@
 </body>
 
 <script>
-    var lsw = LoadLSWUpDown('lsw1', 'sample');
+
+    var loadTest = function(Iframe){
+        console.log(Iframe.id+'열림');
+        //Iframe.style.background = 'blue';
+    }
+
+    // **parm{ divId, id, width, height, option, BP, loaded }**
+    // option : Upload, Download, both
+    // BP : 0 = 기본값, 1 = 창만(버튼은 알아서)
+    // loaded : Iframe이 로드되면 실행될 함수
+
+    //var LSWup = new LSWUpDownPrototype('sample', 'lsw1', 400, 300, 'Upload', 0, loadTest);
+    //var LSWdown = new LSWUpDownPrototype('sample', 'lsw2', 400, 300, 'Download', 0, loadTest);
+    //var LSWup2 = new LSWUpDownPrototype('sample', 'lsw3', 400, 300, 'Upload', 1);
+    //var LSWdown2 = new LSWUpDownPrototype('sample', 'lsw4', 400, 300, 'Download', 1);
+    //var LSWboth = new LSWUpDownPrototype('sample', 'lsw5', 400, 300, 'both', 0, loadTest);
+    //var LSWboth2 = new LSWUpDownPrototype('sample', 'lsw6', 400, 300, 'both', 1);
+    var defaultLSW = new LSWUpDownPrototype('sample', 'default');
+    //var defaultLSW2 = new LSWUpDownPrototype('sample', 'default2');
+    
+	/*
+    LSWup.eventList.OnUpLoadDone_LSW = function(result){
+        console.log("업로드 다했다");
+        console.log(result);
+    }
+
+    LSWup.eventList.OnStopUpload_LSW = function(result){
+        console.log("업로드 중단했다");
+        console.log(result);
+    }    
+    
+    LSWdown.eventList.OnDownLoadDone_LSW = function(result){
+        console.log("다운로드 다했다");
+        console.log(result);
+    }
+
+    LSWdown.eventList.OnDeleted_LSW = function(result){
+        console.log("삭제 다했다");
+        console.log(result);
+    }
+	*/
 </script>
 
 </html>
