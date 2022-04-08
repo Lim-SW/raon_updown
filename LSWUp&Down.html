@@ -10,23 +10,25 @@
     
     
 
-    <div style="float:left;margin-right:10px;" id="sample"></div>
-    <div style="float:left;" id="sample2"></div>
+    <div style="float:left;margin-right:10px;margin-bottom:10px;" id="sample"></div>
+    <div style="float:left;margin-right:10px;margin-bottom:10px;" id="sample2"></div>
     
-    <div id="sample3">
+    <div style="margin-top:10px;" id="sample3">
     	<input type="file" id="fileInputtttt" multiple></input>
     	<button id="uploaddddd">업로드 테스트</button>
     	<button id="dnloaddddd">다운로드 테스트</button>
     </div>
-    <div id="sample4">
+    <div style="margin-top:10px;" id="sample4">
     	<input type="text" id="inputtttt" size="15"></input>
     	<button id="existsssss">파일존재 테스트</button>
     	<button id="fancyyyyy">파일명 다운로드 테스트</button>
     	<button id="refreshhhhh">새로고침 테스트</button>
     </div>
     <div id="sample5">
+    	<h3>왼쪽위ID = lswUP / 왼쪽아래ID = lswDN (업로드 이후 리스트 반영시 불러오기 버튼으로 새로고침필요)</h3>
+    	<h3>오른쪽위아래ID = default (ID 같으므로 업로드쪽에서 동작시 아래쪽 자동으로 새로고침)</h3>
     </div>
-
+	
 
 
 </body>
@@ -64,7 +66,7 @@
    	//var LSWboth = new LSWUpDownPrototype('sample2', 'lsw5', 400, 300, 'both', 0, loadTest);
     //var LSWboth2 = new LSWUpDownPrototype('sample', 'lsw6', 400, 300, 'both', 1);
     
-    //var defaultLSW = new LSWUpDownPrototype('sample', 'default');
+   	var defaultLSW = new LSWUpDownPrototype('sample2', 'default');
     //var defaultLSW2 = new LSWUpDownPrototype('sample2', 'default2');
  	// 기본값의 크기(400px * 300px) 의 업로더와 다운로더를 default2의 id를 부여하여
  	// 버튼을 포함하여 생성 후 sample2 라는 id의 div에 붙힙니다.
