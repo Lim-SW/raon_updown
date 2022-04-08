@@ -7,7 +7,28 @@
     <script src="LSWUp&Down.JS"></script>
 </head>
 <body>
-    <div id="sample"></div>
+    
+    
+
+    <div style="float:left;margin-right:10px;" id="sample"></div>
+    <div style="float:left;" id="sample2"></div>
+    
+    <div id="sample3">
+    	<input type="file" id="fileInputtttt" multiple></input>
+    	<button id="uploaddddd">업로드 테스트</button>
+    	<button id="dnloaddddd">다운로드 테스트</button>
+    </div>
+    <div id="sample4">
+    	<input type="text" id="inputtttt" size="15"></input>
+    	<button id="existsssss">파일존재 테스트</button>
+    	<button id="fancyyyyy">파일명 다운로드 테스트</button>
+    	<button id="refreshhhhh">새로고침 테스트</button>
+    </div>
+    <div id="sample5">
+    </div>
+
+
+
 </body>
 
 <script>
@@ -18,39 +39,131 @@
     }
 
     // **parm{ divId, id, width, height, option, BP, loaded }**
-    // option : Upload, Download, both
-    // BP : 0 = 기본값, 1 = 창만(버튼은 알아서)
+    // divId = 생성된 창을 붙힐 div의 id
+    // id = 생성할 창의 고유 ID (다 독립되어 개별로 작동하게 됩니다.)
+    // ㄴ> 이때 업로드와 다운로드의 아이디가 같으면 새로고침을 동기화하여 편리하게 작동하도록 구현함
+    // width = 업로더, 다운로더의 가로길이
+    // height = 업로더, 다운로더의 세로길이
+    // option : Upload, Download, both(둘다생성, id도같게)
+    // BP : 0 = 기본값, 1 = 창만(버튼은 API 활용하여 알아서)
     // loaded : Iframe이 로드되면 실행될 함수
 
-    //var LSWup = new LSWUpDownPrototype('sample', 'lsw1', 400, 300, 'Upload', 0, loadTest);
-    //var LSWdown = new LSWUpDownPrototype('sample', 'lsw2', 400, 300, 'Download', 0, loadTest);
-    //var LSWup2 = new LSWUpDownPrototype('sample', 'lsw3', 400, 300, 'Upload', 1);
-    //var LSWdown2 = new LSWUpDownPrototype('sample', 'lsw4', 400, 300, 'Download', 1);
-    //var LSWboth = new LSWUpDownPrototype('sample', 'lsw5', 400, 300, 'both', 0, loadTest);
-    //var LSWboth2 = new LSWUpDownPrototype('sample', 'lsw6', 400, 300, 'both', 1);
-    var defaultLSW = new LSWUpDownPrototype('sample', 'default');
-    //var defaultLSW2 = new LSWUpDownPrototype('sample', 'default2');
+    //var LSWup0 = new LSWUpDownPrototype('sample', 'lsw0', 500, 200, 'Upload', 1, loadTest);
+    // 500px * 200px 의 업로더를 lsw0의 id를 부여하여 버튼을 포함하여 생성 후
+    // sample 이라는 id의 div에 붙힙니다. 로드가 완료되면 loadTest 라는 함수를 실행합니다.
+    //var LSWdown0 = new LSWUpDownPrototype('sample', 'lsw1', 400, 300, 'Download', 0, loadTest);
     
-	/*
-    LSWup.eventList.OnUpLoadDone_LSW = function(result){
-        console.log("업로드 다했다");
+    var LSWup1 = new LSWUpDownPrototype('sample', 'lswUP', 400, 300, 'Upload', 0);
+    var LSWdown1 = new LSWUpDownPrototype('sample', 'lswDN', 400, 300, 'Download', 0);
+    
+    //var LSWup2 = new LSWUpDownPrototype('sample', 'lsw3', 400, 300, 'Upload', 1);
+    //var LSWdown2 = new LSWUpDownPrototype('sample', 'lsw4', 600, 400, 'Download', 1);
+ 	// 600px * 400px 의 다운로더를 lsw4의 id를 부여하여 버튼을 포함하지않고 창만 생성 후
+    // sample 이라는 id의 div에 붙힙니다. 로드가 완료되면 기본값으로 설정된 함수를 실행합니다.
+
+   	//var LSWboth = new LSWUpDownPrototype('sample2', 'lsw5', 400, 300, 'both', 0, loadTest);
+    //var LSWboth2 = new LSWUpDownPrototype('sample', 'lsw6', 400, 300, 'both', 1);
+    
+    //var defaultLSW = new LSWUpDownPrototype('sample', 'default');
+    //var defaultLSW2 = new LSWUpDownPrototype('sample2', 'default2');
+ 	// 기본값의 크기(400px * 300px) 의 업로더와 다운로더를 default2의 id를 부여하여
+ 	// 버튼을 포함하여 생성 후 sample2 라는 id의 div에 붙힙니다.
+ 	// 로드가 완료되면 기본값으로 설정된 함수를 실행합니다.
+ 	
+ 	
+    ///////////////////////// API 제공 /////////////////////////
+    
+    var filetag = document.getElementById('fileInputtttt');
+    filetag.onchange = function(){
+        var filelist = filetag.files;
+        
+        // 파일 등록 API //
+        LSWup1.APIList.LswFileLoadAPI('lswUP',filelist);
+        // id, filelist({file1,file2})를 주면 해당 id의 업로드창에 파일들을 올려줌 //
+        
+        filetag.value = "";
+    }
+	
+    var button = document.querySelector("#uploaddddd");
+    button.onclick = function(){
+    	
+    	// 파일 업로드 API //
+    	LSWup1.APIList.LswFileUpAPI('lswUP');
+		// id값을 파라미터로 주면 해당 id의 업로드창에 올라간 파일들을 업로드 실행해줌 //    	
+    	
+    }
+    
+    var button2 = document.querySelector("#dnloaddddd");
+    button2.onclick = function(){
+    	
+    	// 파일 다운로드 API //
+    	LSWdown1.APIList.LswFileDownAPI('lswDN');
+    	// id값을 파라미터로 주면 해당 id의 다운로드창에 체크된 파일들을 다운로드 실행해줌 //
+    	
+    }
+    
+    var button3 = document.querySelector("#fancyyyyy");
+    button3.onclick = function(){
+    	var input = document.getElementById("sample4").childNodes[1].value;
+    	if(input==''){
+    		alert('파일명을 입력해주세요.');
+    	}
+    	else{
+    		
+        	// 파일명으로 다운로드 API //
+        	LSWdown1.APIList.LswFileFancyAPI('lswDN',input);
+        	// id값과 파일명을 파라미터로 주면 해당 파일명의 파일을 간편하게 다운로드 실행해줌 //
+    		
+    	}
+    }
+    
+    var button4 = document.querySelector("#refreshhhhh");
+    button4.onclick = function(){
+    	
+    	// 다운로드창 리스트 새로고침 API //
+    	LSWdown1.APIList.LswRefreshAPI('lswDN');
+    	// id값을 파라미터로 주면 해당 id의 다운로드창에 파일리스트를 새로고침해줌 //
+    	
+    }
+    
+    var button5 = document.querySelector("#existsssss");
+    button5.onclick = function(){
+    	var input = document.getElementById("sample4").childNodes[1].value;
+    	if(input==''){
+    		alert('파일명을 입력해주세요.');
+    	}
+    	else{
+    		
+	    	// 서버에 파일이 있는지 확인해주는 API //
+	    	var result = LSWdown1.APIList.LswIsFileExistsAPI('lswDN',input);
+			console.log(result);
+	    	// id값과 파일명을 파라미터로 주면 서버에 파일이 있는지 bool로 return //
+	    	
+    	}
+    }
+    /*
+    
+    LSWup0.eventList.OnUpLoadDone_LSW = function(result){
+        console.log("업로드를 다했어요!");
         console.log(result);
     }
 
-    LSWup.eventList.OnStopUpload_LSW = function(result){
-        console.log("업로드 중단했다");
+    LSWup0.eventList.OnStopUpload_LSW = function(result,uploaded){
+        console.log("업로드 중단했어요!");
         console.log(result);
+        console.log(uploaded);
     }    
     
-    LSWdown.eventList.OnDownLoadDone_LSW = function(result){
-        console.log("다운로드 다했다");
+    LSWdown2.eventList.OnDownLoadDone_LSW = function(result){
+        console.log("다운로드를 다했어요!");
         console.log(result);
     }
 
-    LSWdown.eventList.OnDeleted_LSW = function(result){
-        console.log("삭제 다했다");
+    defaultLSW2.eventList.OnDeleted_LSW = function(result){
+        console.log("삭제를 완료했어요!");
         console.log(result);
     }
+	
 	*/
 </script>
 

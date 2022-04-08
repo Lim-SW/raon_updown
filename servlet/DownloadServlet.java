@@ -67,7 +67,7 @@ public class DownloadServlet extends HttpServlet {
 		double progressD = 0;
 		double whole = 0;
 		double percent = 0;
-    	
+
     	log+="========="+ip+"=========\n";
     	log+="==="+formdatenow+"==\n";
 		while(fileNames.hasMoreElements()) {
