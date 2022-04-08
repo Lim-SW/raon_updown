@@ -1,4 +1,8 @@
 ﻿# raon_updown (LSWUp&Down)
+
+테스트 페이지   
+http://112.136.138.139:6522/LSWUpDown/LSWUp&Down.html      
+
 (O) 지원 브라우저는 IE10이상, Chrome을 대상으로 한다   
 (O) 업로드 기능 제공 (한번에&하나씩)   
 (O) 다운로드 기능 제공   
@@ -24,7 +28,7 @@
 (O) 중복된 아이디로 생성, 잘못된 파라미터 받을시 예외처리   
 (O) Id와 divId 필수로 받도록 개선      
 
-(▲) API 함수 생성하여 제공   
+(O) API 함수 생성하여 제공   
 (>) 파일 등록 API (LswFileLoadAPI)   
 (>) 파일 업로드 API (LswFileUpAPI)   
 (>) 파일 다운로드 API (LswFileDownAPI)   
