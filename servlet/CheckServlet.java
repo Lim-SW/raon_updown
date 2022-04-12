@@ -1,12 +1,16 @@
 
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +31,30 @@ public class CheckServlet extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-
+    
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    	response.setContentType("text/html");
+		response.setCharacterEncoding("UTF-8");
+    	File list = new File("D:\\LSWUpload\\Uploaded\\#LSW_POSTED_NUMBER.txt");
+    	BufferedReader reader = new BufferedReader(new FileReader(list));
+		String str = "";
+		ArrayList al = new ArrayList();
+		while (( str = reader.readLine()) != null) {
+			al.add(str);
+		}
+		reader.close();
+		
+		for(int i=0;i<al.size();i++) {
+			if(i==al.size()-1) {
+				response.getWriter().write((String)al.get(i));
+			}
+			else {
+				response.getWriter().write((String)al.get(i)+"\n");
+			}
+		}
+		
+    }
+    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
@@ -40,6 +67,11 @@ public class CheckServlet extends HttpServlet {
 		File folder = new File(path);
 		String log = "\n";
 		
+		InputStream postNumIs = request.getPart("postNum").getInputStream();
+		InputStreamReader postNumReader = new InputStreamReader(postNumIs);
+		Stream<String> postNumString= new BufferedReader(postNumReader).lines();
+	    String postNum = postNumString.collect(Collectors.joining());
+	    
 		if (!folder.exists()) {
 			try{
 			    folder.mkdir();
@@ -51,19 +83,21 @@ public class CheckServlet extends HttpServlet {
 
 		log+="========="+ip+"=========\n";
 		log+="==="+formdatenow+"==\n";
+		log+="postNum : ["+postNum+"]\n";
 		String param = "name";
 		boolean flag = false;
 		InputStream is = request.getPart(param).getInputStream();
 		InputStreamReader inputStreamReader = new InputStreamReader(is);
 	    Stream<String> streamOfString= new BufferedReader(inputStreamReader).lines();
 	    String fileName = streamOfString.collect(Collectors.joining());
-	        
+	    
 	    is = request.getPart(fileName).getInputStream();
 	    inputStreamReader = new InputStreamReader(is);
 	    streamOfString= new BufferedReader(inputStreamReader).lines();
 	    long fileSize = Long.parseLong(streamOfString.collect(Collectors.joining()));
-	        
-	    File checkFile = new File(path+"\\"+fileName);
+	       
+	    String fileName2 = "["+postNum+"] "+fileName;
+	    File checkFile = new File(path+"\\"+fileName2);
 	    double percent = Math.round((double)checkFile.length()/(double)fileSize*10000)/100.00;
 	    if(checkFile.exists()) {
 			if(checkFile.length() != fileSize) {

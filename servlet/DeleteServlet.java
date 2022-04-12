@@ -1,9 +1,18 @@
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,6 +37,7 @@ public class DeleteServlet extends HttpServlet {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path = "D:\\LSWUpload\\Uploaded\\";
 		String val = "";
+		
     	int size = (1024 * 1024 * 2000) + 1;
 		MultipartRequest multi = new MultipartRequest(request, path, size, "UTF-8");
     	Enumeration<?> fileNames = multi.getParameterNames();
@@ -37,21 +47,73 @@ public class DeleteServlet extends HttpServlet {
 	    String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    String log = "\n";
-    	
+    	String postNum = "";
+	    
     	File file = null;
     	log+="========="+ip+"=========\n";
     	log+="==="+formdatenow+"==\n";
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
+			if(val.equals("postNum")) {
+				postNum = multi.getParameter(val);
+				break;
+			}
+		}
+    	fileNames = multi.getParameterNames();
+    	while(fileNames.hasMoreElements()) {
+    		path = "D:\\LSWUpload\\Uploaded\\";
+			val = (String) fileNames.nextElement();
+			if(val.equals("postNum")) {
+				continue;
+			}
 			val = multi.getParameter(val);
-			path += val;
+			path += "["+postNum+"] "+val;
 			file = new File(path);
 			file.delete();
 			log+="<파일삭제> "+val+"\n";
-		}
+    	}
     	log+="=================================";
     	System.out.println(log);
+    	
+    	path = "D:\\LSWUpload\\Uploaded\\";
+    	File dir = new File(path);
+		File postList = new File(path+"\\#LSW_POSTED_NUMBER.txt");
+
+		boolean exist = false;
+		String str;
+		
+		File files[] = dir.listFiles();
+		
+		for (int i = 0; i < files.length; i++) {
+			if(files[i].getName()=="#LSW_POSTED_NUMBER.txt") {
+				continue;
+			}
+		    if(files[i].getName().substring(0,postNum.length()+2).equals("["+postNum+"]")) {
+		    	exist = true;
+		    }
+		}
+		
+		ArrayList al = new ArrayList();
+		
+		if(!exist) {
+			BufferedReader reader = new BufferedReader(new FileReader(postList));
+			while (( str = reader.readLine()) != null) {
+				if(str.equals(postNum)) {
+					exist = true;
+				}
+				else {
+					al.add(str);
+				}
+			}
+			BufferedWriter writer = new BufferedWriter(new FileWriter(postList));
+			for(int i=0;i<al.size();i++) {
+				writer.write((String)al.get(i));
+				writer.newLine();
+			}
+			reader.close();
+			writer.close();
+		}
 	}
 
 }

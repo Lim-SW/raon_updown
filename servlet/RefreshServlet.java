@@ -27,16 +27,24 @@ public class RefreshServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		response.setCharacterEncoding("UTF-8");
-    	
+    	String postNum = request.getParameter("postNum");
+		
     	String path = "D:\\LSWUpload\\Uploaded";
     	File dir = new File(path);
     	File files[] = dir.listFiles();
 
     	for (int i = 0; i < files.length; i++) {
-    	    //out.println(files[i].getName()+"<BR>");
-    	    //out.println(files[i].length()+"<BR>");
-    	    response.getWriter().write(files[i].getName()+"/");
-    	    response.getWriter().write(Long.toString(files[i].length())+"/");
+    		if(files[i].getName().equals("#LSW_POSTED_NUMBER.txt")) {
+    			continue;
+    		}
+    		int start = files[i].getName().indexOf("[");
+    		int end = files[i].getName().indexOf("]");
+    		String number = files[i].getName().substring(start+1,end);
+    		if(number.equals(postNum)) {
+    			String tempName = files[i].getName();
+        	    response.getWriter().write(tempName.substring(end+2,tempName.length())+"/");
+        	    response.getWriter().write(Long.toString(files[i].length())+"/");
+    		}
     	}
     }
 

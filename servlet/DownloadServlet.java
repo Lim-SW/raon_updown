@@ -63,28 +63,29 @@ public class DownloadServlet extends HttpServlet {
 		
     	File file = null;
     	List<File> files = new ArrayList<>();
-    	String randomnumber = "";
+    	String randomnumber = multi.getParameter("randomNumber");;
 		double progressD = 0;
 		double whole = 0;
 		double percent = 0;
+		String postNum = multi.getParameter("postNum");
 
-    	log+="========="+ip+"=========\n";
+		log+="========="+ip+"=========\n";
     	log+="==="+formdatenow+"==\n";
-		while(fileNames.hasMoreElements()) {
+    	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
 			val = (String) fileNames.nextElement();
 			val = multi.getParameter(val);
 			if(val.contains(".")) {
-				path += val;
+				path += "["+postNum+"] "+val;
 				file = new File(path);
 				files.add(file);
 				log+="<다운로드> "+val+"\n";
 			}
 			else {
-				randomnumber = val;
 				percentIp.put(ip+","+randomnumber,0);
 			}
 		}
+
 		log+="=================================";
 		
 		if(files.size()>1) {
@@ -95,6 +96,10 @@ public class DownloadServlet extends HttpServlet {
 			//String s = "";
 	        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
 	            for (File f : files) {
+	            	String tag = "["+postNum+"] ";
+	            	path = "D:\\LSWUpload\\Uploaded\\";
+	            	f.renameTo(new File(path+f.getName().replace(tag, "")));
+	            	f = new File(path+f.getName().replace(tag, ""));
 	                try (FileInputStream in = new FileInputStream(f)) {
 	                    ZipEntry ze = new ZipEntry(f.getName());
 	                    out.putNextEntry(ze);
@@ -115,6 +120,7 @@ public class DownloadServlet extends HttpServlet {
 	                    b = new byte[10000];
 	                    out.closeEntry();
 	                }
+	                f.renameTo(new File(path+tag+f.getName()));
 	            }
 	            percent = 100.00;
 	            percentIp.put(ip+","+randomnumber,percent);

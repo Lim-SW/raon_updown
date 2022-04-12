@@ -7,28 +7,32 @@
     <script src="LSWUp&Down.JS"></script>
 </head>
 <body>
-    
-    
-
-    <div style="float:left;margin-right:10px;margin-bottom:10px;" id="sample"></div>
-    <div style="float:left;margin-right:10px;margin-bottom:10px;" id="sample2"></div>
-    
-    <div style="margin-top:10px;" id="sample3">
-    	<input type="file" id="fileInputtttt" multiple></input>
-    	<button id="uploaddddd">업로드 테스트</button>
-    	<button id="dnloaddddd">다운로드 테스트</button>
+	<div style="margin-right:10px;margin-bottom:10px;" id="sample"></div>
+	<div>
+	    <div style="margin-right:10px;margin-bottom:10px;" id="sample2"></div>
     </div>
-    <div style="margin-top:10px;" id="sample4">
-    	<input type="text" id="inputtttt" size="15"></input>
-    	<button id="existsssss">파일존재 테스트</button>
-    	<button id="fancyyyyy">파일명 다운로드 테스트</button>
-    	<button id="refreshhhhh">새로고침 테스트</button>
-    </div>
-    <div id="sample5">
-    	<h3>왼쪽위ID = lswUP / 왼쪽아래ID = lswDN (업로드 이후 리스트 반영시 불러오기 버튼으로 새로고침필요)</h3>
-    	<h3>오른쪽위아래ID = default (ID 같으므로 업로드쪽에서 동작시 아래쪽 자동으로 새로고침)</h3>
-    </div>
+    
+    <div id="API" style="width:600px; border: 2px dotted black;">
+	    <div id="sample3">
+	    	<h3>API 테스트 버튼</h3>
+	    	<input type="file" id="fileInputtttt" multiple></input>
+	    	<button id="uploaddddd">업로드 테스트</button>
+	    	<button id="dnloaddddd">다운로드 테스트</button>
+	    </div>
+		<div id="sample6">
+		    <input type="text" id="posttttt" size="15" placeholder="게시물 번호 입력"></input>
+		    <button id="refreshhhhh">게시물별 독립된 파일 가져오기 테스트</button>
+		    <button id="listtttt">모든 게시물 번호 출력</button>
+		</div>
+	</div>
 	
+	<!--
+	<div id="sample5">
+	    <h3>아래의 API 테스트 버튼은 왼쪽 위 아래에 연동되어있습니다.</h3>
+	    <h3>왼쪽위ID = lswUP / 왼쪽아래ID = lswDN (업로드 이후 리스트 반영시 불러오기 버튼으로 새로고침필요)</h3>
+	    <h3>오른쪽위아래ID = default (ID 같으므로 업로드쪽에서 동작시 아래쪽 자동으로 새로고침)</h3>
+	</div>
+    -->
 
 
 </body>
@@ -66,7 +70,7 @@
    	//var LSWboth = new LSWUpDownPrototype('sample2', 'lsw5', 400, 300, 'both', 0, loadTest);
     //var LSWboth2 = new LSWUpDownPrototype('sample', 'lsw6', 400, 300, 'both', 1);
     
-   	var defaultLSW = new LSWUpDownPrototype('sample2', 'default');
+   	//var defaultLSW = new LSWUpDownPrototype('sample2', 'default');
     //var defaultLSW2 = new LSWUpDownPrototype('sample2', 'default2');
  	// 기본값의 크기(400px * 300px) 의 업로더와 다운로더를 default2의 id를 부여하여
  	// 버튼을 포함하여 생성 후 sample2 라는 id의 div에 붙힙니다.
@@ -103,69 +107,56 @@
     	// id값을 파라미터로 주면 해당 id의 다운로드창에 체크된 파일들을 다운로드 실행해줌 //
     	
     }
-    
-    var button3 = document.querySelector("#fancyyyyy");
-    button3.onclick = function(){
-    	var input = document.getElementById("sample4").childNodes[1].value;
+
+    var button6 = document.getElementById('refreshhhhh');
+    button6.onclick = function(){
+    	var input = document.getElementById("sample6").childNodes[1].value;
     	if(input==''){
-    		alert('파일명을 입력해주세요.');
+    		alert('게시물 번호를 입력해주세요.');
     	}
     	else{
     		
-        	// 파일명으로 다운로드 API //
-        	LSWdown1.APIList.LswFileFancyAPI('lswDN',input);
-        	// id값과 파일명을 파라미터로 주면 해당 파일명의 파일을 간편하게 다운로드 실행해줌 //
-    		
-    	}
-    }
-    
-    var button4 = document.querySelector("#refreshhhhh");
-    button4.onclick = function(){
-    	
-    	// 다운로드창 리스트 새로고침 API //
-    	LSWdown1.APIList.LswRefreshAPI('lswDN');
-    	// id값을 파라미터로 주면 해당 id의 다운로드창에 파일리스트를 새로고침해줌 //
-    	
-    }
-    
-    var button5 = document.querySelector("#existsssss");
-    button5.onclick = function(){
-    	var input = document.getElementById("sample4").childNodes[1].value;
-    	if(input==''){
-    		alert('파일명을 입력해주세요.');
-    	}
-    	else{
-    		
-	    	// 서버에 파일이 있는지 확인해주는 API //
-	    	var result = LSWdown1.APIList.LswIsFileExistsAPI('lswDN',input);
-			console.log(result);
-	    	// id값과 파일명을 파라미터로 주면 서버에 파일이 있는지 bool로 return //
+	    	// 서버에 API //
+	    	var result = LSWdown1.APIList.LswRefreshAPI('lswDN',input);
+	    	// id값과 게시물 번호를 파라미터로 주면 해당 게시물들을 다운로드창에 append //
 	    	
     	}
     }
-    /*
     
-    LSWup0.eventList.OnUpLoadDone_LSW = function(result){
+    var button7 = document.getElementById('listtttt');
+    button7.onclick = function(){
+	    // 서버에 API //
+	   	LSWdown1.APIList.LswGetPostListAPI();
+	    // id값과 게시물 번호를 파라미터로 주면 해당 게시물들을 다운로드창에 append //
+
+    }
+    
+    LSWup1.eventList.OnUpLoadDone_LSW = function(postNum,result){
+        console.log("'ID:LSWup0 이벤트 함수로 적용으로 인한 출력입니다.'");
         console.log("업로드를 다했어요!");
+        console.log(postNum);
         console.log(result);
     }
 
-    LSWup0.eventList.OnStopUpload_LSW = function(result,uploaded){
+    LSWup1.eventList.OnStopUpload_LSW = function(postNum,stopped,uploaded){
+        console.log("'ID:LSWup0 이벤트 함수로 적용으로 인한 출력입니다.'");
         console.log("업로드 중단했어요!");
-        console.log(result);
-        console.log(uploaded);
+        console.log(postNum);
+        console.log(stopped);
+        console.log(uploaded); 
     }    
     
-    LSWdown2.eventList.OnDownLoadDone_LSW = function(result){
+    LSWdown1.eventList.OnDownLoadDone_LSW = function(result){
+        console.log("'ID:LSWdown2 이벤트 함수로 적용으로 인한 출력입니다.'");
         console.log("다운로드를 다했어요!");
         console.log(result);
     }
-
-    defaultLSW2.eventList.OnDeleted_LSW = function(result){
+	/*
+    defaultLSW.eventList.OnDeleted_LSW = function(result){
+        console.log("'ID:defaultLSW2 이벤트 함수로 적용으로 인한 출력입니다.'");
         console.log("삭제를 완료했어요!");
         console.log(result);
     }
-	
 	*/
 </script>
 

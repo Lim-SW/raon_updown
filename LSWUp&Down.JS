@@ -86,7 +86,7 @@ LSWUpDownPrototype.prototype.loadFunc = { // UI 생성 및 업&다운로드 기�
                 var clearList = AddB(up[1], 'button', 'clearList', '전부제외');
                 clearList.onclick = function () { LSWUpDownPrototype.prototype.funcList.ClearList(up[0], '제외', '', up[2],id);}
                 var startUpload = AddB(up[1], 'button', 'startUpload', '업로드시작');
-                startUpload.onclick = function () { LSWUpDownPrototype.prototype.funcList.SendWaitList(id,up[0],up[1],LSWUpDownPrototype.prototype.option.wl.get(id),LSWUpDownPrototype.prototype.option.result.get(id)); }
+                startUpload.onclick = function () { LSWUpDownPrototype.prototype.funcList.SendWaitList('',id,up[0],up[1],LSWUpDownPrototype.prototype.option.wl.get(id),LSWUpDownPrototype.prototype.option.result.get(id)); }
             }
         }
 
@@ -98,13 +98,21 @@ LSWUpDownPrototype.prototype.loadFunc = { // UI 생성 및 업&다운로드 기�
             var dn = LoadUI('Download', bp);
             if(bp==0&&dn!=0){
                 var refresh = AddB(dn[1], 'button', 'refresh', '불러오기'); // 다운로드영역 버튼+리스너
-                refresh.onclick = function () { LSWUpDownPrototype.prototype.funcList.ListFiles(dn[0]); }
+                refresh.onclick = function () {
+                    var postNum = prompt('게시글 번호를 입력해주세요');
+                    if(postNum!=null&&postNum!=""&&postNum.indexOf('.')==-1){
+                        //console.log(postNum);
+                        LSWUpDownPrototype.prototype.funcList.ListFiles(dn[0], postNum);
+                    }
+                }
                 var deleteFile = AddB(dn[1], 'button', 'deleteFile', '파일삭제');
                 deleteFile.onclick = function () { LSWUpDownPrototype.prototype.funcList.ControlFile(dn[0], 'delete',id,LSWUpDownPrototype.prototype.option.wl.get(id),dn[1]); }
                 var clearFiles = AddB(dn[1], 'button', 'clearFiles', '전부삭제');
                 clearFiles.onclick = function () { LSWUpDownPrototype.prototype.funcList.ClearList(dn[0], '삭제', '', dn[2],id); }
                 var startDownload = AddB(dn[1], 'form', 'startDownload', '다운로드시작');
-                startDownload[1].onclick = function () { LSWUpDownPrototype.prototype.funcList.ControlFile(dn[0], 'download',id,LSWUpDownPrototype.prototype.option.wl.get(id),startDownload,dn[1]); }
+                startDownload[1].onclick = function () {
+                    LSWUpDownPrototype.prototype.funcList.ControlFile(dn[0],'download',id,LSWUpDownPrototype.prototype.option.wl.get(id),startDownload,dn[1]);
+                }
             }
         }
 
@@ -163,7 +171,7 @@ LSWUpDownPrototype.prototype.loadFunc = { // UI 생성 및 업&다운로드 기�
                     Place.contentDocument.body.style.marginRight = '0px';
                 }
                 Place.contentDocument.body.style.margin = '0';
-                if (key == 'Download') { LSWUpDownPrototype.prototype.funcList.ListFiles(fileListDiv); }
+                //if (key == 'Download') { LSWUpDownPrototype.prototype.funcList.ListFiles(fileListDiv); }
                 LSWUpDownPrototype.prototype.eventList.OnIframeLoaded_LSW(Place);
                 LoadCSS(Place);
             });
@@ -297,13 +305,15 @@ LSWUpDownPrototype.prototype.loadFunc = { // UI 생성 및 업&다운로드 기�
 }
 
 LSWUpDownPrototype.prototype.eventList = { // 유저가 사용할 이벤트 함수
-    OnUpLoadDone_LSW : function (result) { // 업로드 완료시
+    OnUpLoadDone_LSW : function (postNum,result) { // 업로드 완료시
         console.log("Default Message : 업로드가 완료되었습니다.");
+        console.log("PostNum:"+postNum); // 업로드한 게시물 번호
         console.log(result); // result[] = 업로드가 완료된 파일 목록
     },
 
-    OnStopUpload_LSW : function (result, uploaded) { // 업로드 중단시
+    OnStopUpload_LSW : function (postNum, result, uploaded) { // 업로드 중단시
         console.log("Default Message : 업로드가 중단되었습니다.");
+        console.log("PostNum:"+postNum); // 업로드한 게시물 번호
         console.log(result); // result[] = 업로드가 중단된 파일의 이름 , 진행률
         console.log(uploaded); // uploaded[] = 이미 업로드가 완료된 파일들
     },
@@ -366,16 +376,16 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
             }
             else{var up1 = ''};
             
-            LSWUpDownPrototype.prototype.funcList.SendWaitList(id,up0,up1,
+            LSWUpDownPrototype.prototype.funcList.SendWaitList('',id,up0,up1,
                 LSWUpDownPrototype.prototype.option.wl.get(id),
                 LSWUpDownPrototype.prototype.option.result.get(id));
         } catch (e) {
-            //if(e instanceof TypeError){
-            //    console.log("※LSWUpDown ERROR on @LswFileUpAPI : \nparameter의 id 오류(id="+id+")");
-            //}
-            //else{
+            if(e instanceof TypeError){
+                console.log("※LSWUpDown ERROR on @LswFileUpAPI : \nparameter의 id 오류(id="+id+")");
+            }
+            else{
                 console.log(e);
-            //}
+            }
         }
 
     },
@@ -414,38 +424,7 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
         }
     },
 
-    LswFileFancyAPI:function (id,fileName){  // 파일명을 받아서 서버에 있으면 즉시 다운로드
-        try {
-            if(LSWUpDownPrototype.prototype.APIList.LswIsFileExistsAPI(id,fileName)){
-                var tempForm = document.createElement('form');
-                tempForm.style.display='none';
-                tempForm.acceptCharset = "UTF-8";
-                tempForm.method = 'post';
-                tempForm.action = '/LSWUpDown/DownloadServlet';
-                tempForm.target = '_self';
-                tempForm.enctype = 'multipart/form-data';
-                document.body.appendChild(tempForm);
-
-                var formSend = [tempForm,];
-                LSWUpDownPrototype.prototype.funcList.ControlFile('', 'download', id, 
-                    LSWUpDownPrototype.prototype.option.wl.get(id),formSend,'',fileName);
-                document.body.removeChild(tempForm);
-            }
-            else{
-                console.log("※LSWUpDown ERROR on @LswFileFancyAPI : \n"+fileName+" << 해당 파일이 존재하지 않습니다.");
-            }
-            
-        } catch (e) {
-            if(e instanceof TypeError){
-                console.log("※LSWUpDown ERROR on @LswFileFancyAPI : \nparameter의 id 오류(id="+id+")");
-            }
-            else{
-                console.log(e);
-            }
-        }
-    },
-
-    LswIsFileExistsAPI:function (id,fileName){ // 파일명을 받아서 존재유무를 bool로 return
+    LswRefreshAPI:function (id,postNum){ // 다운로드창의 다운로드 리스트를 최신화
         try {
             var list = document.getElementById('DownloadDiv_'+id);
             if(list==undefined){
@@ -453,45 +432,33 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
                 return 0;
             }
             var where = list.childNodes[0].contentDocument.body.childNodes[1];
-            LSWUpDownPrototype.prototype.APIList.LswRefreshAPI(id);
+            LSWUpDownPrototype.prototype.funcList.ListFiles(where,postNum);
 
-            for(var i=0;i<where.childNodes.length;i++){
-                if(fileName == where.childNodes[i].childNodes[1].innerText){
-                    return true;
+        } catch (e) {
+            if(e instanceof TypeError){
+                console.log("※LSWUpDown ERROR on @LswFileDownOneAPI : \nparameter 오류(id="+id+", postNum="+postNum+")");
+            }
+            else{
+                console.log(e);
+            }
+        }
+    },
+
+    LswGetPostListAPI:function (){
+        var req = new XMLHttpRequest();
+        req.open("GET", '/LSWUpDown/CheckServlet');
+        req.send();
+        req.onreadystatechange = function () {
+            if (req.readyState == XMLHttpRequest.DONE && req.status == 200) {
+                if (req.responseText == "") {
+                    console.log(false);
+                }
+                else{
+                    console.log(req.responseText);
                 }
             }
-
-            return false;
-
-        } catch (e) {
-            if(e instanceof TypeError){
-                console.log("※LSWUpDown ERROR on @LswIsFileExistsAPI : \nparameter의 id 오류(id="+id+")");
-            }
-            else{
-                console.log(e);
-            }
         }
-    },
-
-    LswRefreshAPI:function (id){ // 다운로드창의 다운로드 리스트를 최신화
-        try {
-            var list = document.getElementById('DownloadDiv_'+id);
-            if(list==undefined){
-                console.log("※LSWUpDown ERROR on @LswFileDownAPI : \n해당 id로 생성된 Download창이 없습니다.(id="+id+")");
-                return 0;
-            }
-            var where = list.childNodes[0].contentDocument.body.childNodes[1];
-            LSWUpDownPrototype.prototype.funcList.ListFiles(where);
-
-        } catch (e) {
-            if(e instanceof TypeError){
-                console.log("※LSWUpDown ERROR on @LswFileDownOneAPI : \nparameter의 id 오류(id="+id+")");
-            }
-            else{
-                console.log(e);
-            }
-        }
-    },
+    }
 }
 
 LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
@@ -532,7 +499,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         var same = '개 제외하였습니다.\n';
         var add = '개의 파일을 추가하였습니다.\n';
         var sameCount = 0;
-        if(th.type=='file'){var files = th.files;}
+        if(th.files){var files = th.files;}
         else{var files = th}
         for (var f = 0; f < files.length; f++) {
             var tempF = files[f];
@@ -560,7 +527,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         if(th.type=='file'){th.value = '';}
     },
 
-    SendWaitList:function(id,up0,up1,wl,result,again) { // 업로드 리스트에 있는 파일 업로드 시작
+    SendWaitList:function(postNum,id,up0,up1,wl,result,again) { // 업로드 리스트에 있는 파일 업로드 시작
         var place = document.getElementById('UploadPlace_' + id);
         var modal = place.contentDocument.getElementById('modal');
         var pauseB = place.contentDocument.getElementById('pauseB');
@@ -569,7 +536,15 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                 LSWUpDownPrototype.prototype.funcList.ModalYesNo(modal, '파일을 업로드 하시겠습니까?\n(※리스트 전부 업로드 됩니다.※)', up0);
                 if(up1!=''){up1.style.display = 'none';}
                 modal.childNodes[0].childNodes[6].onclick = function () {
-                    LSWUpDownPrototype.prototype.funcList.ResumeFunc(modal, pauseB, up0, up1, wl, id, result);
+                    var postNum = prompt('게시글 번호를 입력해주세요');
+                    if(postNum!=null&&postNum!=""&&postNum.indexOf('.')==-1){
+                        LSWUpDownPrototype.prototype.funcList.ResumeFunc(postNum, modal, pauseB, up0, up1, wl, id, result);
+                    }
+                    else{
+                        alert("잘못 입력하셨습니다.");
+                        modal.style.display = 'none';
+                        if(up1!=''){up1.style.display = 'flex';}
+                    }
                 };
                 modal.childNodes[0].childNodes[5].onclick = function () {
                     modal.style.display = 'none';
@@ -577,7 +552,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                 };
             }
             else {
-                LSWUpDownPrototype.prototype.funcList.ResumeFunc(modal, pauseB, up0, up1, wl, id, result);
+                LSWUpDownPrototype.prototype.funcList.ResumeFunc(postNum, modal, pauseB, up0, up1, wl, id, result);
             }
         }
         else {
@@ -590,9 +565,10 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         LSWUpDownPrototype.prototype.funcList.Addfile(e.dataTransfer, up, wl);
     },
 
-    ListFiles:function(where) { // 다운로드 리스트에 파일 불러오기(새로고침)
+    ListFiles:function(where, postNum) { // 다운로드 리스트에 파일 불러오기(새로고침)
+        //if(postNum==undefined){alert('')}
         var req = new XMLHttpRequest();
-        req.open('service', '/LSWUpDown/RefreshServlet');
+        req.open('service', '/LSWUpDown/RefreshServlet?' + "postNum=" + postNum);
         req.send();
 
         req.onreadystatechange = function () {
@@ -603,6 +579,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                 for (var f = 0; f < fileSplit.length; f += 2) {
                     LSWUpDownPrototype.prototype.funcList.LoadFile(where, fileSplit[f], LSWUpDownPrototype.prototype.funcList.BytesToSize(fileSplit[f + 1]));
                 }
+                where.value = postNum;
             }
             else if (req.status == 500 || req.status == 404 || req.status == 403) {
                 alert("(" + req.status + ")오류가 발생하였습니다.");
@@ -611,18 +588,16 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         }
     },
 
-    ControlFile:function(where, tag, id, wl, startDownload, dn1, API) { // 체크된 파일 컨트롤(제외,삭제,다운로드)
+    ControlFile:function(where, tag, id, wl, startDownload, dn1) { // 체크된 파일 컨트롤(제외,삭제,다운로드)
         var flag = 0;
         var controlList = [];
         var message = '';
-        if(API != undefined){flag=1;}
-        else{
-            for (var u = 0; u < where.childNodes.length; u++) {
-                if (where.childNodes[u].childNodes[0].checked) {
-                    controlList.push(where.childNodes[u].childNodes[1].innerText);
-                    message += '\n>>> ' + where.childNodes[u].childNodes[1].innerText;
-                    flag = 1;
-                }
+
+        for (var u = 0; u < where.childNodes.length; u++) {
+            if (where.childNodes[u].childNodes[0].checked) {
+                controlList.push(where.childNodes[u].childNodes[1].innerText);
+                message += '\n>>> ' + where.childNodes[u].childNodes[1].innerText;
+                flag = 1;
             }
         }
 
@@ -634,9 +609,8 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         if (flag == 1) {
             var yesorno = null;
             if (tag == 'delete') { yesorno = confirm('체크된 항목을 삭제하시겠습니까?\n(※실제 서버에서 삭제됩니다.※)\n' + message); }
-            else if (tag == 'download'&&API==undefined) { yesorno = confirm('체크된 항목을 다운로드 하시겠습니까?\n' + message); }
+            else if (tag == 'download') { yesorno = confirm('체크된 항목을 다운로드 하시겠습니까?\n' + message); }
             else if (tag == 'except') { yesorno = confirm('체크된 항목을 제외하시겠습니까?\n' + message); }
-            else if (API != undefined){yesorno=true;}
 
             if (yesorno != null && yesorno) {
                 if (tag == 'except') {
@@ -653,14 +627,6 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                     }
                     alert('체크된 항목을 제외하였습니다.\n' + message);
                 }
-                else if(API != undefined){
-                    var temptemp = document.createElement('input');
-                    temptemp.type = 'hidden';
-                    temptemp.name = 'name';
-                    temptemp.value = API;
-                    if(tag == 'download'){startDownload[0].appendChild(temptemp)};
-                    startDownload[0].submit();
-                }
                 else {
                     var place = document.getElementById('DownloadPlace_' + id);
                     var modal = place.contentDocument.getElementById('modal');
@@ -672,16 +638,21 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                         formData.append('name' + w, controlList[w]);
                         var temptemp = document.createElement('input');
                         temptemp.type = 'hidden';
-                        temptemp.name = 'name' + w;
+                        if(w!=controlList.length-1){temptemp.name = 'name' + w;}
+                        else{temptemp.name = "randomNumber";}
                         temptemp.value = controlList[w];
                         if(tag == 'download'){startDownload[0].appendChild(temptemp)};
                     }
-
 
                     if (tag == 'delete') { req.open('service', '/LSWUpDown/DeleteServlet'); req.send(formData); }
                     else if (tag == 'download') {
                         if(dn1!=''){dn1.style.display = 'none';}
                         LSWUpDownPrototype.prototype.funcList.ModalOn(modal, where, 'down');
+                        var temptemp = document.createElement('input');
+                        temptemp.type = 'hidden';
+                        temptemp.name = 'postNum';
+                        temptemp.value = where.value;
+                        startDownload[0].appendChild(temptemp);
                         startDownload[0].submit();
                         var isZip = w > 2;
                         var intv = setInterval(function () {
@@ -691,7 +662,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                                 startDownload[0].innerHTML = "";
                                 LSWUpDownPrototype.prototype.funcList.ModalOff(modal, "파일 다운로드가 완료되었습니다. 100.0%", where);
                                 modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
-                                LSWUpDownPrototype.prototype.funcList.ListFiles(where);
+                                //LSWUpDownPrototype.prototype.funcList.ListFiles(where);
                                 if(dn1!=''){dn1.style.display = 'flex';}
                                 controlList.pop();
                                 LSWUpDownPrototype.prototype.eventList.OnDownLoadDone_LSW(controlList);
@@ -700,10 +671,11 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                     }
                     req.onreadystatechange = function () {
                         if (req.readyState == XMLHttpRequest.DONE && req.status == 200) {
-                            LSWUpDownPrototype.prototype.funcList.ListFiles(where);
+                            //LSWUpDownPrototype.prototype.funcList.ListFiles(where);
                             if (tag == 'delete') {
                                 alert('체크된 항목을 삭제하였습니다.\n' + message);
                                 LSWUpDownPrototype.prototype.eventList.OnDeleted_LSW(controlList);
+                                LSWUpDownPrototype.prototype.funcList.ListFiles(where, where.value);
                             }
                             
                         }
@@ -743,15 +715,18 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                             LSWUpDownPrototype.prototype.option.result.get(id).push(where.childNodes[u].childNodes[1].innerText);
                         }
 
+                        formData.append("postNum",where.value);
+
                         LSWUpDownPrototype.prototype.funcList.ModalOn(modal, where);
                         req.open('service', '/LSWUpDown/DeleteServlet');
                         req.send(formData);
                         req.onreadystatechange = function () {
                             if (req.readyState == XMLHttpRequest.DONE && req.status == 200) {
                                 LSWUpDownPrototype.prototype.funcList.ModalOff(modal, "전부 삭제되었습니다.", where);
-                                LSWUpDownPrototype.prototype.funcList.ListFiles(where);
+                                //LSWUpDownPrototype.prototype.funcList.ListFiles(where);
                                 LSWUpDownPrototype.prototype.eventList.OnDeleted_LSW(LSWUpDownPrototype.prototype.option.result.get(id));
                                 LSWUpDownPrototype.prototype.option.result.set(id,[]);
+                                LSWUpDownPrototype.prototype.funcList.ListFiles(where, where.value);
                             }
                             else if (req.status == 500 || req.status == 404 || req.status == 403) {
                                 LSWUpDownPrototype.prototype.funcList.ModalOff(modal, "(" + req.status + ")오류가 발생하였습니다.", where);
@@ -851,12 +826,13 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         else { where.parentNode.scrollTo(0, 0); }
     },
 
-    ResumeFunc:function(modal, pauseB, up0, up1, wl, id, result) { // 이어올리기 기능
+    ResumeFunc:function(postNum, modal, pauseB, up0, up1, wl, id, result) { // 이어올리기 기능
         var filename = wl[0].name;
         if (filename.length > 12) { filename = filename.substring(0, 12) + "...."; }
         var checkForm = new FormData();
         checkForm.append('name', wl[0].name);
         checkForm.append(wl[0].name, wl[0].sizeN);
+        checkForm.append('postNum', postNum);
 
         var checkReq = new XMLHttpRequest();
         checkReq.open("POST", '/LSWUpDown/CheckServlet');
@@ -870,20 +846,20 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                     LSWUpDownPrototype.prototype.funcList.ModalYesNo(modal, "이어서 올리시겠습니까?\n" + percent, up0);
 
                     modal.childNodes[0].childNodes[6].onclick = function () {
-                        LSWUpDownPrototype.prototype.funcList.UploadFunc(modal, pauseB, res[2], up0, up1, wl, id, result, 'YES');
+                        LSWUpDownPrototype.prototype.funcList.UploadFunc(postNum, modal, pauseB, res[2], up0, up1, wl, id, result, 'YES');
                     };
                     modal.childNodes[0].childNodes[5].onclick = function () {
-                        LSWUpDownPrototype.prototype.funcList.UploadFunc(modal, pauseB, 0, up0, up1, wl, id, result, 'NO');
+                        LSWUpDownPrototype.prototype.funcList.UploadFunc(postNum, modal, pauseB, 0, up0, up1, wl, id, result, 'NO');
                     };
                 }
                 else {
-                    LSWUpDownPrototype.prototype.funcList.UploadFunc(modal, pauseB, 0, up0, up1, wl, id, result, 'NO');
+                    LSWUpDownPrototype.prototype.funcList.UploadFunc(postNum, modal, pauseB, 0, up0, up1, wl, id, result, 'NO');
                 }
             }
         }
     },
 
-    UploadFunc:function(modal, pauseB, offset, up0, up1, wl, id, result, yesno) { // 업로드 리퀘스트 및 프로세스 함수화
+    UploadFunc:function(postNum, modal, pauseB, offset, up0, up1, wl, id, result, yesno) { // 업로드 리퀘스트 및 프로세스 함수화
         offset = Number(offset);
         LSWUpDownPrototype.prototype.funcList.ModalOn(modal, up0);
         var filename = wl[0].name; // formData.get('name');
@@ -899,6 +875,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
         formData.append(wl[0].name + ' size', wl[0].sizeN);
         formData.append(wl[0].name, chunk);
         formData.append('yesno', yesno);
+        formData.append('postNum', postNum);
 
         var req = new XMLHttpRequest();
         req.open("POST", '/LSWUpDown/UploadServlet');
@@ -918,22 +895,22 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
             if (req.readyState == XMLHttpRequest.DONE && req.status == 200) {
                 if ((offset + term != fullsize) && (offset + term < fullsize)) {
                     offset += term;
-                    LSWUpDownPrototype.prototype.funcList.UploadFunc(modal, pauseB, offset, up0, up1, wl, id, result);
+                    LSWUpDownPrototype.prototype.funcList.UploadFunc(postNum, modal, pauseB, offset, up0, up1, wl, id, result);
                 }
                 else {
                     if (LSWUpDownPrototype.prototype.option.isIE) { var temp = modal.parentElement.childNodes[1].childNodes[0]; temp.parentNode.removeChild(temp); }
                     else { modal.parentElement.childNodes[1].childNodes[0].remove(); }
-                    var isDn = document.getElementById('DownloadPlace_'+id);
-                    if(isDn != null){LSWUpDownPrototype.prototype.funcList.ListFiles(isDn.contentDocument.body.childNodes[1])};
+                    //var isDn = document.getElementById('DownloadPlace_'+id);
+                    //if(isDn != null){LSWUpDownPrototype.prototype.funcList.ListFiles(isDn.contentDocument.body.childNodes[1])};
                     modal.childNodes[0].childNodes[2].childNodes[0].style.width = '100%';
                     result.push(wl.shift());
                     if (wl.length != 0) {
-                        LSWUpDownPrototype.prototype.funcList.SendWaitList(id,up0,up1,wl,result,'again');
+                        LSWUpDownPrototype.prototype.funcList.SendWaitList(postNum,id,up0,up1,wl,result,'again');
                     }
                     else {
                         LSWUpDownPrototype.prototype.funcList.ModalOff(modal, "파일 업로드가 완료되었습니다. 100.0%", up0);
                         if(up1!=''){up1.style.display = 'flex';}
-                        LSWUpDownPrototype.prototype.eventList.OnUpLoadDone_LSW(result);
+                        LSWUpDownPrototype.prototype.eventList.OnUpLoadDone_LSW(postNum, result);
                         LSWUpDownPrototype.prototype.option.result.set(id,[]);
                     }
                 }
@@ -950,7 +927,7 @@ LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
                 req.abort();
                 LSWUpDownPrototype.prototype.funcList.ModalOff(modal, "파일 업로드가 중단되었습니다.", up0);
                 if(up1!=''){up1.style.display = 'flex';}
-                LSWUpDownPrototype.prototype.eventList.OnStopUpload_LSW([wl[0],percentComplete+"%"],result);
+                LSWUpDownPrototype.prototype.eventList.OnStopUpload_LSW(postNum,[wl[0],percentComplete+"%"],result);
                 LSWUpDownPrototype.prototype.option.result.set(id,[]);
                 return 0;
             }

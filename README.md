@@ -29,9 +29,9 @@ http://112.136.138.139:6522/LSWUpDown/LSWUp&Down.html
 (O) Id와 divId 필수로 받도록 개선      
 
 (O) API 함수 생성하여 제공   
-(>) 파일 등록 API (LswFileLoadAPI)   
-(>) 파일 업로드 API (LswFileUpAPI)   
-(>) 파일 다운로드 API (LswFileDownAPI)   
-(>) 파일명으로 다운로드 API (LswFileFancyAPI)   
-(>) 다운로드창 파일리스트 새로고침 API (LswRefreshAPI)   
-(>) 서버에 해당파일 유무확인 API (LswIsFileExistsAPI)   
+(+) 파일 등록 API (LswFileLoadAPI)   
+(+) 파일 업로드 API (LswFileUpAPI)   
+(+) 파일 다운로드 API (LswFileDownAPI)   
+(+) 전체 게시물 번호 출력 (LswGetPostListAPI)      
+
+(O) 게시물 번호별로 독립된 다운로드 페이지 구성   

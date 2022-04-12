@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -61,10 +64,18 @@ public class UploadServlet extends HttpServlet {
 			InputStreamReader yesnoReader = new InputStreamReader(yesno);
 			Stream<String> yesnoString= new BufferedReader(yesnoReader).lines();
 		    String yn = yesnoString.collect(Collectors.joining());
+		    
+			InputStream postNumIs = request.getPart("postNum").getInputStream();
+			InputStreamReader postNumReader = new InputStreamReader(postNumIs);
+			Stream<String> postNumString= new BufferedReader(postNumReader).lines();
+		    String postNum = postNumString.collect(Collectors.joining());
+		    
+		    //System.out.println(postNum);
 	
 			//////////////////////// Part&Write ////////////////////////
 			log+="========="+ip+"=========\n";
 			log+="==="+formdatenow+"==\n";
+			log+="postNum : ["+postNum+"]\n";
 			Collection<Part> parts = request.getParts();
 			for (Part part : parts) {
 				if(part.getContentType()!=null) {
@@ -78,13 +89,13 @@ public class UploadServlet extends HttpServlet {
 					//System.out.printf("파라미터 명 : %s, contentType :  %s,  size : %d bytes \n", part.getName(),part.getContentType(), part.getSize());
 					log+="<업로드> "+fileName+"\n";
 	
-					File checkFile = new File(path+"\\"+fileName);
+					File checkFile = new File(path+"\\["+postNum+"] "+fileName);
 				    if(yn.equals("NO")&&checkFile.exists()) {
 				    	checkFile.delete();
 				    }
 	
 					if(checkFile.exists()) {
-						FileOutputStream stream = new FileOutputStream(path+"\\"+fileName, true);
+						FileOutputStream stream = new FileOutputStream(path+"\\["+postNum+"] "+fileName, true);
 						InputStream is = part.getInputStream();
 				        int read;
 				        byte[] b =new byte[10000];
@@ -102,23 +113,23 @@ public class UploadServlet extends HttpServlet {
 					}
 					else { // notExist
 						if(part.getSize()!=0) {
-							part.write(path+"\\"+fileName);
+							part.write(path+"\\["+postNum+"] "+fileName);
 						}
 					}
 	
-					checkFile = new File(path+"\\"+fileName);
+					checkFile = new File(path+"\\["+postNum+"] "+fileName);
 					
 					if(checkFile.length() == fileSize) {
-						Path oldfile = Paths.get(path+"\\"+fileName);
-						Path newfile = Paths.get(realPath+"\\"+fileName);
-						File nf = new File(realPath+"\\"+fileName);
+						Path oldfile = Paths.get(path+"\\["+postNum+"] "+fileName);
+						Path newfile = Paths.get(realPath+"\\["+postNum+"] "+fileName);
+						File nf = new File(realPath+"\\["+postNum+"] "+fileName);
 						int i = 1;
 						String newName = "";
 						while(nf.exists()) {
 							int li = fileName.lastIndexOf(".");
 							newName = fileName.substring(0, li)+"("+i+")"+fileName.substring(li, fileName.length());
-							newfile = Paths.get(realPath+"\\"+newName);
-							nf = new File(realPath+"\\"+newName);
+							newfile = Paths.get(realPath+"\\["+postNum+"] "+newName);
+							nf = new File(realPath+"\\["+postNum+"] "+newName);
 							i++;
 						}
 						if(newName!="") {log+="└><중복된 파일명 변경> "+newName+"\n";}
@@ -130,6 +141,24 @@ public class UploadServlet extends HttpServlet {
 				}
 			}
 			
+			File postList = new File(realPath+"\\#LSW_POSTED_NUMBER.txt");
+			BufferedWriter writer = new BufferedWriter(new FileWriter(postList,true));
+			BufferedReader reader = new BufferedReader(new FileReader(postList));
+			boolean exist = false;
+			String str;
+			while (( str = reader.readLine()) != null) {
+				if(str.equals(postNum)) {
+					exist = true;
+					break;
+				}
+			}
+			if(!exist || str == null) {
+				writer.write(postNum+"\n");
+			}
+			
+			
+			reader.close();
+			writer.close();
 			////////////////////////////////////////////////////////////
 			
 			/*
