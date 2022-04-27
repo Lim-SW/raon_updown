@@ -54,7 +54,7 @@
     // BP : 0 = 기본값, 1 = 창만(버튼은 API 활용하여 알아서)
     // loaded : Iframe이 로드되면 실행될 함수
 
-    //var LSWup0 = new LSWUpDownPrototype('sample', 'lsw0', 500, 200, 'Upload', 1, loadTest);
+    var LSWup0 = new LSWUpDownPrototype('sample', 'lsw0', 500, 200, 'Upload', 1, loadTest);
     // 500px * 200px 의 업로더를 lsw0의 id를 부여하여 버튼을 포함하여 생성 후
     // sample 이라는 id의 div에 붙힙니다. 로드가 완료되면 loadTest 라는 함수를 실행합니다.
     //var LSWdown0 = new LSWUpDownPrototype('sample', 'lsw1', 400, 300, 'Download', 0, loadTest);
@@ -117,7 +117,7 @@
     	else{
 	    	// 해당 번호를 앞에 태그로 가진 파일들을 리스트화하는 API //
 	    	var result = LSWdown1.APIList.LswRefreshAPI('lswDN',input);
-	    	// id값과 게시물 번호를 파라미터로 주면 해당 게시물들을 다운로드창에 append //
+	    	// id값과 게시물 번호를 파라미터로 주면 해당 게시물의 파일들을 다운로드창에 append //
 	    	
     	}
     }

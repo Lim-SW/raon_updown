@@ -423,6 +423,7 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
             }
         }
     },
+    
     LswRefreshAPI:function (id,postNum){ // 다운로드창의 다운로드 리스트를 최신화
         try {
             var list = document.getElementById('DownloadDiv_'+id);
