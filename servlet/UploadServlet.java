@@ -136,29 +136,29 @@ public class UploadServlet extends HttpServlet {
 						Files.move(oldfile, newfile, StandardCopyOption.ATOMIC_MOVE);
 						checkFile.delete();
 						log+="=================================";
+						File postList = new File(realPath+"\\#LSW_POSTED_NUMBER.txt");
+						BufferedWriter writer = new BufferedWriter(new FileWriter(postList,true));
+						BufferedReader reader = new BufferedReader(new FileReader(postList));
+						boolean exist = false;
+						String str;
+						while (( str = reader.readLine()) != null) {
+							if(str.equals(postNum)) {
+								exist = true;
+								break;
+							}
+						}
+						if(!exist || str == null) {
+							writer.write(postNum+"\n");
+						}
+						
+						
+						reader.close();
+						writer.close();
 						System.out.println(log);
 					}
 				}
 			}
 			
-			File postList = new File(realPath+"\\#LSW_POSTED_NUMBER.txt");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(postList,true));
-			BufferedReader reader = new BufferedReader(new FileReader(postList));
-			boolean exist = false;
-			String str;
-			while (( str = reader.readLine()) != null) {
-				if(str.equals(postNum)) {
-					exist = true;
-					break;
-				}
-			}
-			if(!exist || str == null) {
-				writer.write(postNum+"\n");
-			}
-			
-			
-			reader.close();
-			writer.close();
 			////////////////////////////////////////////////////////////
 			
 			/*

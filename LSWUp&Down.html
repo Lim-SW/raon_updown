@@ -22,7 +22,7 @@
 		<div id="sample6">
 		    <input type="text" id="posttttt" size="15" placeholder="게시물 번호 입력"></input>
 		    <button id="refreshhhhh">게시물별 독립된 파일 가져오기 테스트</button>
-		    <button id="listtttt">모든 게시물 번호 출력</button>
+		    <!--<button id="listtttt">모든 게시물 번호 출력</button>-->
 		</div>
 	</div>
 	
@@ -115,22 +115,22 @@
     		alert('게시물 번호를 입력해주세요.');
     	}
     	else{
-    		
-	    	// 서버에 API //
+	    	// 해당 번호를 앞에 태그로 가진 파일들을 리스트화하는 API //
 	    	var result = LSWdown1.APIList.LswRefreshAPI('lswDN',input);
 	    	// id값과 게시물 번호를 파라미터로 주면 해당 게시물들을 다운로드창에 append //
 	    	
     	}
     }
     
+    /*
     var button7 = document.getElementById('listtttt');
     button7.onclick = function(){
-	    // 서버에 API //
+	    // 존재하는 게시물 번호를 전부 출력해주는 API //
 	   	LSWdown1.APIList.LswGetPostListAPI();
-	    // id값과 게시물 번호를 파라미터로 주면 해당 게시물들을 다운로드창에 append //
+	    // 웹 콘솔에 현재 존재하는 게시물의 번호를 전부 출력 //
 
     }
-    
+    */
     LSWup1.eventList.OnUpLoadDone_LSW = function(postNum,result){
         console.log("'ID:LSWup0 이벤트 함수로 적용으로 인한 출력입니다.'");
         console.log("업로드를 다했어요!");

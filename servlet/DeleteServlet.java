@@ -5,14 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -47,19 +43,11 @@ public class DeleteServlet extends HttpServlet {
 	    String ip = request.getHeader("X-Forwarded-For");
 	    if (ip == null) ip = request.getRemoteAddr();
 	    String log = "\n";
-    	String postNum = "";
+	    String postNum = multi.getParameter("postNum");
 	    
     	File file = null;
     	log+="========="+ip+"=========\n";
     	log+="==="+formdatenow+"==\n";
-    	while(fileNames.hasMoreElements()) {
-    		path = "D:\\LSWUpload\\Uploaded\\";
-			val = (String) fileNames.nextElement();
-			if(val.equals("postNum")) {
-				postNum = multi.getParameter(val);
-				break;
-			}
-		}
     	fileNames = multi.getParameterNames();
     	while(fileNames.hasMoreElements()) {
     		path = "D:\\LSWUpload\\Uploaded\\";
@@ -94,7 +82,7 @@ public class DeleteServlet extends HttpServlet {
 		    }
 		}
 		
-		ArrayList al = new ArrayList();
+		ArrayList<String> al = new ArrayList<String>();
 		
 		if(!exist) {
 			BufferedReader reader = new BufferedReader(new FileReader(postList));

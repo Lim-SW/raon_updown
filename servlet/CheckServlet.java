@@ -1,10 +1,8 @@
 
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,7 +36,7 @@ public class CheckServlet extends HttpServlet {
     	File list = new File("D:\\LSWUpload\\Uploaded\\#LSW_POSTED_NUMBER.txt");
     	BufferedReader reader = new BufferedReader(new FileReader(list));
 		String str = "";
-		ArrayList al = new ArrayList();
+		ArrayList<String> al = new ArrayList<String>();
 		while (( str = reader.readLine()) != null) {
 			al.add(str);
 		}

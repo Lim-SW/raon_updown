@@ -423,7 +423,6 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
             }
         }
     },
-
     LswRefreshAPI:function (id,postNum){ // 다운로드창의 다운로드 리스트를 최신화
         try {
             var list = document.getElementById('DownloadDiv_'+id);
@@ -443,8 +442,8 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
             }
         }
     },
-
-    LswGetPostListAPI:function (){
+    /* 사용하지 않음 역할에 맞지 않음
+    LswGetPostListAPI:function (){ // 존재하는 게시물 번호를 전부 출력
         var req = new XMLHttpRequest();
         req.open("GET", '/LSWUpDown/CheckServlet');
         req.send();
@@ -458,7 +457,7 @@ LSWUpDownPrototype.prototype.APIList = { // 유저가 사용할 API
                 }
             }
         }
-    }
+    }*/
 }
 
 LSWUpDownPrototype.prototype.funcList ={ // 기능 함수 모음
